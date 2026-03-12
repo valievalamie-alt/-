@@ -3,137 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Rocket Tap</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body {
-            background: #0d0d0d; color: #fff; font-family: -apple-system, sans-serif;
-            text-align: center; margin: 0; padding: 0;
-            height: 100vh; display: flex; flex-direction: column;
-            user-select: none; -webkit-tap-highlight-color: transparent;
-        }
-        #ui { padding: 30px 20px 10px; }
-        #user { font-size: 16px; color: #aaa; margin-bottom: 5px; font-weight: 500; }
-        #score { font-size: 55px; font-weight: 900; color: #ff9f00; margin: 0; text-shadow: 0 0 20px rgba(255,159,0,0.3); }
-        
-        #game { flex-grow: 1; display: flex; align-items: center; justify-content: center; }
-        #coin {
-            width: 160px; height: 160px; background: radial-gradient(circle, #ffb300, #ff8c00);
-            border-radius: 50%; font-size: 70px; display: flex;
-            align-items: center; justify-content: center;
-            box-shadow: 0 0 40px rgba(255,159,0,0.4);
-            border: 6px solid rgba(255,255,255,0.2); cursor: pointer;
-            transition: transform 0.05s;
-        }
-        #coin:active { transform: scale(0.92); }
-
-        #menu { padding: 25px; background: #1a1a1a; display: flex; gap: 12px; border-radius: 25px 25px 0 0; }
-        .btn {
-            flex: 1; padding: 18px; border: none; border-radius: 15px;
-            font-weight: bold; font-size: 15px; cursor: pointer; color: #fff;
-            transition: 0.2s;
-        }
-        #upd-btn { background: #3498db; }
-        #top-btn { background: #333; }
-        .btn:disabled { background: #222; color: #555; transform: scale(1) !important; }
-
-        #top-ui {
-            display: none; position: fixed; top: 0; left: 0; width: 100%;
-            height: 100%; background: #0d0d0d; z-index: 99;
-            flex-direction: column; padding: 40px 20px; box-sizing: border-box;
-        }
-        .list-container { background: #1a1a1a; border-radius: 20px; margin-top: 20px; overflow: hidden; }
-        .row { display: flex; justify-content: space-between; padding: 20px; border-bottom: 1px solid #222; font-size: 18px; }
-        .me { color: #ff9f00; font-weight: bold; background: rgba(255,159,0,0.05); }
-        .close-btn { margin-top: auto; background: #ff4444; color: white; border: none; padding: 18px; border-radius: 15px; font-weight: bold; width: 100%; }
-
-        /* Эффект клика */
-        .tap-num { position: absolute; font-weight: bold; font-size: 30px; pointer-events: none; animation: fly 0.7s forwards; color: #fff; }
-        @keyframes fly { to { opacity: 0; transform: translateY(-100px); } }
+        body { background: #000; color: #fff; text-align: center; font-family: sans-serif; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; }
+        #score { font-size: 60px; color: orange; margin: 20px; }
+        #coin { width: 180px; height: 180px; background: orange; border-radius: 50%; font-size: 80px; display: flex; align-items: center; justify-content: center; border: 5px solid #fff; cursor: pointer; user-select: none; }
+        #coin:active { transform: scale(0.9); }
+        #btn { margin-top: 30px; padding: 15px 30px; background: #007bff; color: #fff; border: none; border-radius: 10px; font-weight: bold; font-size: 20px; }
+        #btn:disabled { background: #333; }
     </style>
 </head>
 <body>
-
-    <div id="ui">
-        <div id="user">Загрузка пилота...</div>
-        <div id="score">0</div>
-    </div>
-
-    <div id="game">
-        <div id="coin">🚀</div>
-    </div>
-
-    <div id="menu">
-        <button id="upd-btn" class="btn">Апгрейд</button>
-        <button id="top-btn" class="btn">🏆 ТОП</button>
-    </div>
-
-    <div id="top-ui">
-        <h1 style="margin:0">Лидеры</h1>
-        <div class="list-container" id="list"></div>
-        <button class="close-btn" onclick="document.getElementById('top-ui').style.display='none'">Вернуться в игру</button>
-    </div>
+    <div id="score">0</div>
+    <div id="coin">🚀</div>
+    <button id="btn">Улучшить (50)</button>
 
     <script>
         const tg = window.Telegram.WebApp;
-        tg.ready();
         tg.expand();
 
-        // Имя из Телеграм
-        let name = "Пилот";
-        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-            name = tg.initDataUnsafe.user.first_name || tg.initDataUnsafe.user.username || "Пилот";
-        }
-        document.getElementById('user').innerText = "Пилот: " + name;
+        let score = Number(localStorage.getItem('s')) || 0;
+        let pwr = Number(localStorage.getItem('p')) || 1;
+        let cost = Number(localStorage.getItem('c')) || 50;
 
-        // Данные (v4 для чистого запуска)
-        let score = Number(localStorage.getItem('s_v4')) || 0;
-        let pwr = Number(localStorage.getItem('p_v4')) || 1;
-        let cost = Number(localStorage.getItem('c_v4')) || 50;
-
-        function refresh() {
-            document.getElementById('score').innerText = Math.floor(score);
-            document.getElementById('upd-btn').innerText = "Улучшить (+" + (pwr+1) + ") • " + cost;
-            document.getElementById('upd-btn').disabled = score < cost;
-            localStorage.setItem('s_v4', score);
-            localStorage.setItem('p_v4', pwr);
-            localStorage.setItem('c_v4', cost);
+        function update() {
+            document.getElementById('score').innerText = score;
+            document.getElementById('btn').innerText = "Upgrade +" + (pwr+1) + " (Cost: " + cost + ")";
+            document.getElementById('btn').disabled = score < cost;
+            localStorage.setItem('s', score);
+            localStorage.setItem('p', pwr);
+            localStorage.setItem('c', cost);
         }
 
-        function createEffect(x, y) {
-            const el = document.createElement('div');
-            el.className = 'tap-num';
-            el.innerText = '+' + pwr;
-            el.style.left = x + 'px';
-            el.style.top = y + 'px';
-            document.body.appendChild(el);
-            setTimeout(() => el.remove(), 700);
-        }
-
-        document.getElementById('coin').onclick = (e) => {
+        document.getElementById('coin').onclick = () => {
             score += pwr;
             if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
-            createEffect(e.clientX, e.clientY);
-            refresh();
+            update();
         };
 
-        document.getElementById('upd-btn').onclick = () => {
+        document.getElementById('btn').onclick = () => {
             if(score >= cost) {
                 score -= cost;
                 pwr += 1;
-                cost = Math.round(cost * 1.6);
-                if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-                refresh();
+                cost = Math.floor(cost * 1.5);
+                update();
             }
         };
 
-        document.getElementById('top-btn').onclick = () => {
-            const list = document.getElementById('list');
-            list.innerHTML = `<div class="row me"><span>1. ${name} (Вы)</span><span>${Math.floor(score)}</span></div>`;
-            document.getElementById('top-ui').style.display = 'flex';
-        };
-
-        refresh();
+        update();
     </script>
 </body>
 </html>
