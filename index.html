@@ -1,115 +1,214 @@
 <!DOCTYPE html>
-<html>
+<html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        body { background: #000; color: #fff; font-family: sans-serif; text-align: center; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-        #header { padding: 20px; }
-        #score { font-size: 50px; color: orange; font-weight: bold; margin: 0; }
-        #coin-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; }
-        #coin { width: 180px; height: 180px; background: orange; border-radius: 50%; font-size: 80px; display: flex; align-items: center; justify-content: center; border: 5px solid #fff; cursor: pointer; user-select: none; }
-        #coin:active { transform: scale(0.9); }
-        #footer { padding: 20px; background: #111; display: flex; flex-direction: column; gap: 10px; border-radius: 20px 20px 0 0; }
-        .btn { padding: 15px; border: none; border-radius: 10px; color: #fff; font-weight: bold; font-size: 16px; cursor: pointer; }
-        #upd-btn { background: #007bff; }
-        #case-btn { background: #8e44ad; }
-        .btn:disabled { background: #333; color: #666; }
+        :root {
+            --tg-theme-bg-color: #000000;
+            --main-orange: #ff9f00;
+            --blue-btn: #007aff;
+            --purple-btn: #8e44ad;
+        }
+        body {
+            background-color: var(--tg-theme-bg-color);
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0; padding: 0;
+            display: flex; flex-direction: column; align-items: center;
+            height: 100vh; overflow: hidden; user-select: none;
+        }
+        #header { margin-top: 40px; text-align: center; }
+        #score { font-size: 64px; font-weight: bold; color: var(--main-orange); margin: 0; }
         
-        /* Окно кейса */
-        #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; flex-direction: column; align-items: center; justify-content: center; }
-        #loot { font-size: 24px; color: #ff9f00; margin: 20px; font-weight: bold; }
+        #game-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; width: 100%; }
+        #coin {
+            width: 220px; height: 220px; background: var(--main-orange);
+            border-radius: 50%; border: 6px solid white;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 0 40px rgba(255, 159, 0, 0.4);
+            transition: transform 0.05s; cursor: pointer;
+        }
+        #coin img { width: 140px; pointer-events: none; }
+        #coin:active { transform: scale(0.92); }
+
+        #controls {
+            width: 100%; padding: 20px; box-sizing: border-box;
+            background: rgba(20, 20, 20, 0.8); border-radius: 30px 30px 0 0;
+            display: flex; flex-direction: column; gap: 12px;
+        }
+        .btn {
+            width: 100%; height: 60px; border: none; border-radius: 16px;
+            font-size: 20px; font-weight: bold; color: white; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            -webkit-appearance: none;
+        }
+        #upd-btn { background: var(--blue-btn); }
+        #case-btn { background: var(--purple-btn); }
+        .btn:disabled { background: #333; color: #777; }
+
+        /* ОКНО КЕЙСА (CS STYLE) */
+        #case-modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 100; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+        #case-container {
+            width: 300px; height: 100px; border: 2px solid #444; overflow: hidden;
+            position: relative; background: #111; border-radius: 10px;
+        }
+        #case-line {
+            position: absolute; left: 50%; top: 0; width: 2px; height: 100%;
+            background: red; z-index: 10; transform: translateX(-50%);
+        }
+        #case-reel {
+            display: flex; position: absolute; left: 0; top: 0; height: 100%;
+            transition: left 3s cubic-bezier(0.1, 0, 0.1, 1);
+        }
+        .case-item {
+            min-width: 100px; height: 100%; display: flex;
+            align-items: center; justify-content: center; font-size: 40px;
+            border-right: 1px solid #222;
+        }
+        #win-msg { margin-top: 20px; font-size: 22px; font-weight: bold; color: var(--main-orange); }
+
+        .tap-anim {
+            position: absolute; color: white; font-size: 30px; font-weight: bold;
+            pointer-events: none; animation: flyUp 0.6s forwards;
+        }
+        @keyframes flyUp { to { transform: translateY(-100px); opacity: 0; } }
     </style>
 </head>
 <body>
 
     <div id="header">
         <div id="score">0</div>
-        <div style="color:#888">Сила клика: <span id="pwr">1</span></div>
+        <div style="font-size:14px; color:#666">Сила: <span id="pwr-val">1</span></div>
     </div>
 
-    <div id="coin-area">
-        <div id="coin">🚀</div>
+    <div id="game-area">
+        <div id="coin">
+            <img src="https://raw.githubusercontent.com/TarikCo/TestRocket/main/rocket.png" alt="🚀">
+        </div>
     </div>
 
-    <div id="footer">
-        <button id="upd-btn" class="btn">Улучшить (+1) • 50</button>
-        <button id="case-btn" class="btn">Открыть Кейс • 200</button>
+    <div id="controls">
+        <button id="upd-btn" class="btn">Upgrade +1 (Cost: 50)</button>
+        <button id="case-btn" class="btn">🎁 Open Case (200)</button>
     </div>
 
-    <div id="modal">
-        <h2>Распаковка...</h2>
-        <div id="loot"></div>
-        <button onclick="closeModal()" class="btn" style="background:#444; width:200px">Закрыть</button>
+    <div id="case-modal">
+        <h2 id="case-status">Распаковка...</h2>
+        <div id="case-container">
+            <div id="case-line"></div>
+            <div id="case-reel" style="left: 0;"></div>
+        </div>
+        <div id="win-msg"></div>
+        <button onclick="closeCase()" id="close-case" class="btn" style="background:#444; width:200px; margin-top:30px; display:none">Назад</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        let score = Number(localStorage.getItem('sc_final')) || 0;
-        let pwr = Number(localStorage.getItem('pw_final')) || 1;
-        let cost = Number(localStorage.getItem('ct_final')) || 50;
+        let score = Number(localStorage.getItem('tap_sc')) || 0;
+        let pwr = Number(localStorage.getItem('tap_pw')) || 1;
+        let cost = Number(localStorage.getItem('tap_ct')) || 50;
 
-        function refresh() {
+        function updateUI() {
             document.getElementById('score').innerText = Math.floor(score);
-            document.getElementById('pwr').innerText = pwr;
-            document.getElementById('upd-btn').innerText = "Улучшить (+1) • " + cost;
+            document.getElementById('pwr-val').innerText = pwr;
+            document.getElementById('upd-btn').innerText = `Upgrade +${pwr+1} (Cost: ${cost})`;
             document.getElementById('upd-btn').disabled = score < cost;
             document.getElementById('case-btn').disabled = score < 200;
             
-            localStorage.setItem('sc_final', score);
-            localStorage.setItem('pw_final', pwr);
-            localStorage.setItem('ct_final', cost);
+            localStorage.setItem('tap_sc', score);
+            localStorage.setItem('tap_pw', pwr);
+            localStorage.setItem('tap_ct', cost);
         }
 
-        document.getElementById('coin').onclick = () => {
+        document.getElementById('coin').onclick = (e) => {
             score += pwr;
             if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
-            refresh();
+            
+            let anim = document.createElement('div');
+            anim.className = 'tap-anim';
+            anim.innerText = '+' + pwr;
+            anim.style.left = e.clientX + 'px';
+            anim.style.top = e.clientY + 'px';
+            document.body.appendChild(anim);
+            setTimeout(() => anim.remove(), 600);
+            
+            updateUI();
         };
 
         document.getElementById('upd-btn').onclick = () => {
             if(score >= cost) {
                 score -= cost;
                 pwr += 1;
-                cost = Math.round(cost * 1.6);
-                refresh();
+                cost = Math.floor(cost * 1.6);
+                updateUI();
             }
         };
 
-        // Логика кейса (простая и надежная)
+        // ЛОГИКА КЕЙСА (CS STYLE)
+        const items = ['🚀', '💰', '💎', '⭐', '🔥', '🔋', '🎁', '🚀', '💰'];
+        
         document.getElementById('case-btn').onclick = () => {
-            if(score >= 200) {
-                score -= 200;
-                const modal = document.getElementById('modal');
-                const loot = document.getElementById('loot');
-                modal.style.display = 'flex';
-                loot.innerText = "Крутим барабан...";
-                
-                setTimeout(() => {
-                    const r = Math.random();
-                    if(r < 0.1) { // 10% шанс на супер-приз
-                        pwr += 10;
-                        loot.innerText = "🔥 СУПЕР! +10 к силе клика!";
-                    } else if(r < 0.4) { // 30% шанс на очки
-                        score += 500;
-                        loot.innerText = "💰 Удача! +500 очков!";
-                    } else {
-                        pwr += 2;
-                        loot.innerText = "🔋 Неплохо! +2 к силе клика";
-                    }
-                    refresh();
-                }, 1500);
+            if(score < 200) return;
+            score -= 200;
+            updateUI();
+            
+            const modal = document.getElementById('case-modal');
+            const reel = document.getElementById('case-reel');
+            const winMsg = document.getElementById('win-msg');
+            const closeBtn = document.getElementById('close-case');
+            
+            modal.style.display = 'flex';
+            winMsg.innerText = "";
+            closeBtn.style.display = 'none';
+            reel.style.transition = 'none';
+            reel.style.left = '0px';
+
+            // Генерируем ленту
+            reel.innerHTML = '';
+            for(let i=0; i<30; i++) {
+                let div = document.createElement('div');
+                div.className = 'case-item';
+                div.innerText = items[Math.floor(Math.random()*items.length)];
+                reel.appendChild(div);
             }
+
+            // Запуск прокрутки
+            setTimeout(() => {
+                reel.style.transition = 'left 3s cubic-bezier(0.1, 0, 0.1, 1)';
+                const stopPos = -(22 * 100) + Math.floor(Math.random()*50);
+                reel.style.left = stopPos + 'px';
+            }, 50);
+
+            setTimeout(() => {
+                const winChance = Math.random();
+                if(winChance > 0.9) {
+                    pwr += 10;
+                    winMsg.innerText = "JACKPOT! +10 к силе!";
+                } else if(winChance > 0.5) {
+                    score += 1000;
+                    winMsg.innerText = "КРУТО! +1000 очков!";
+                } else {
+                    pwr += 2;
+                    winMsg.innerText = "Норм! +2 к силе";
+                }
+                closeBtn.style.display = 'flex';
+                updateUI();
+            }, 3200);
         };
 
-        function closeModal() {
-            document.getElementById('modal').style.display = 'none';
+        function closeCase() {
+            document.getElementById('case-modal').style.display = 'none';
         }
 
-        refresh();
+        updateUI();
     </script>
 </body>
 </html>
