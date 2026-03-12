@@ -7,8 +7,8 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        :root { --bg: #000; --orange: #ff9f00; --blue: #007aff; --pulp: #8e44ad; }
-        body { background: var(--bg); color: white; font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        :root { --bg: #000; --orange: #ff9f00; --blue: #007aff; --purple: #8e44ad; }
+        body { background: var(--bg); color: white; font-family: -apple-system, sans-serif; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
         #header { padding: 25px 20px 5px; text-align: center; }
         #score { font-size: 44px; font-weight: bold; color: var(--orange); margin: 0; }
@@ -21,27 +21,19 @@
         #menu { background: #1c1c1e; padding: 12px; border-radius: 25px 25px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-bottom: 35px; }
         .btn { height: 52px; border: none; border-radius: 15px; font-weight: bold; color: white; font-size: 14px; cursor: pointer; }
         #upd-btn { background: var(--blue); }
-        #case-btn { background: var(--pulp); }
+        #case-btn { background: var(--purple); }
         #top-btn { background: #3a3a3c; grid-column: span 2; }
 
-        /* ЛИДЕРБОРД 12px */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); z-index: 100; flex-direction: column; align-items: center; justify-content: center; }
-        #top-list { width: 88%; background: #1c1c1e; border-radius: 18px; margin: 12px 0; max-height: 60vh; overflow-y: auto; }
+        #top-list { width: 88%; background: #1c1c1e; border-radius: 18px; margin: 12px 0; max-height: 55vh; overflow-y: auto; }
         
-        .row { 
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 8px 16px; /* Более узкие строки */
-            border-bottom: 1px solid #2c2c2e; 
-            font-size: 12px; /* Твой размер */
-            color: #efefef;
-        }
-        .row:last-child { border-bottom: none; }
-        .row span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%; }
-        .row b { color: var(--orange); font-size: 12px; font-family: monospace; }
-        .row.me { background: rgba(0, 122, 255, 0.12); font-weight: bold; }
-        
-        h2 { font-size: 20px; margin: 0; color: #fff; }
-        .close-btn { background: #444; width: 120px; margin-top: 10px; height: 40px; font-size: 13px; }
+        .row { display: flex; justify-content: space-between; align-items: center; padding: 8px 16px; border-bottom: 1px solid #2c2c2e; font-size: 12px; }
+        .row b { color: var(--orange); font-family: monospace; }
+
+        /* Стиль для сундука */
+        #case-content { text-align: center; }
+        #case-emoji { font-size: 80px; margin-bottom: 20px; display: block; }
+        #case-result { font-size: 20px; font-weight: bold; min-height: 30px; margin-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -57,14 +49,24 @@
 
     <div id="menu">
         <button id="upd-btn" class="btn">Upgrade</button>
-        <button id="case-btn" class="btn">🎁 Case</button>
+        <button id="case-btn" class="btn">🎁 Open Case</button>
         <button id="top-btn" class="btn">🏆 ЛИДЕРБОРД ОНЛАЙН</button>
     </div>
 
     <div id="top-modal" class="modal">
         <h2>Топ Игроков</h2>
         <div id="top-list"></div>
-        <button onclick="document.getElementById('top-modal').style.display='none'" class="btn close-btn">Назад</button>
+        <button onclick="closeModal('top-modal')" class="btn" style="background:#444; width:120px;">Назад</button>
+    </div>
+
+    <div id="case-modal" class="modal">
+        <div id="case-content">
+            <span id="case-emoji">🎁</span>
+            <div id="case-result">Что внутри?</div>
+            <button id="case-open-action" class="btn" style="background:var(--purple); width:180px; margin-bottom:10px;">ОТКРЫТЬ ЗА 200</button>
+            <br>
+            <button onclick="closeModal('case-modal')" class="btn" style="background:#444; width:120px;">Закрыть</button>
+        </div>
     </div>
 
     <script>
@@ -83,26 +85,28 @@
         const tg = window.Telegram.WebApp;
         if (tg) tg.expand();
         
-        const userId = (tg?.initDataUnsafe?.user?.id) || "g_" + Math.floor(Math.random()*1000);
-        const userNick = (tg?.initDataUnsafe?.user?.first_name) || "Пилот";
+        const userId = tg?.initDataUnsafe?.user?.id || "g_" + Math.floor(Math.random()*1000);
+        const userNick = tg?.initDataUnsafe?.user?.first_name || "Пилот";
         document.getElementById('nick').innerText = "Пилот: " + userNick;
 
-        // sc_v12 для сброса кэша на iPhone
-        let score = Number(localStorage.getItem('sc_v12')) || 0;
-        let pwr = Number(localStorage.getItem('pw_v12')) || 1;
-        let cost = Number(localStorage.getItem('ct_v12')) || 50;
+        let score = Number(localStorage.getItem('sc_v13')) || 0;
+        let pwr = Number(localStorage.getItem('pw_v13')) || 1;
+        let cost = Number(localStorage.getItem('ct_v13')) || 50;
+        const CASE_PRICE = 200;
 
         function refresh() {
             document.getElementById('score').innerText = Math.floor(score).toLocaleString();
             document.getElementById('upd-btn').innerText = `Up (+1) • ${cost}`;
-            document.getElementById('upd-btn').style.opacity = score < cost ? "0.5" : "1";
+            document.getElementById('case-btn').innerText = `🎁 Case (${CASE_PRICE})`;
             
-            localStorage.setItem('sc_v12', score);
-            localStorage.setItem('pw_v12', pwr);
-            localStorage.setItem('ct_v12', cost);
+            localStorage.setItem('sc_v13', score);
+            localStorage.setItem('pw_v13', pwr);
+            localStorage.setItem('ct_v13', cost);
             
             db.ref('users/' + userId).set({ name: userNick, score: Math.floor(score) });
         }
+
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
 
         document.getElementById('coin').onclick = () => {
             score += pwr;
@@ -119,18 +123,47 @@
             }
         };
 
+        // ЛОГИКА СУНДУКА
+        document.getElementById('case-btn').onclick = () => {
+            document.getElementById('case-modal').style.display = 'flex';
+            document.getElementById('case-emoji').innerText = "🎁";
+            document.getElementById('case-result').innerText = "Готов рискнуть?";
+            document.getElementById('case-open-action').style.display = 'inline-block';
+        };
+
+        document.getElementById('case-open-action').onclick = () => {
+            if (score >= CASE_PRICE) {
+                score -= CASE_PRICE;
+                document.getElementById('case-open-action').style.display = 'none';
+                document.getElementById('case-result').innerText = "Открываем...";
+                document.getElementById('case-emoji').innerText = "📦";
+                
+                setTimeout(() => {
+                    const rand = Math.random();
+                    let win = 0;
+                    if (rand > 0.95) { win = 5000; document.getElementById('case-emoji').innerText = "💎"; }
+                    else if (rand > 0.7) { win = 1000; document.getElementById('case-emoji').innerText = "💰"; }
+                    else if (rand > 0.3) { win = 300; document.getElementById('case-emoji').innerText = "💵"; }
+                    else { win = 0; document.getElementById('case-emoji').innerText = "💨"; }
+
+                    score += win;
+                    document.getElementById('case-result').innerText = win > 0 ? `Выигрыш: +${win}!` : "Пусто...";
+                    refresh();
+                }, 1000);
+            } else {
+                alert("Недостаточно очков!");
+            }
+        };
+
         document.getElementById('top-btn').onclick = () => {
             const list = document.getElementById('top-list');
             list.innerHTML = "<div class='row'>Загрузка...</div>";
             document.getElementById('top-modal').style.display = 'flex';
-
-            db.ref('users').orderByChild('score').limitToLast(20).once('value', (snapshot) => {
+            db.ref('users').orderByChild('score').limitToLast(15).once('value', (s) => {
                 list.innerHTML = "";
-                let players = [];
-                snapshot.forEach(child => { players.push(child.val()); });
-                players.reverse().forEach((p, i) => {
-                    const isMe = p.name === userNick ? "row me" : "row";
-                    list.innerHTML += `<div class="${isMe}"><span>${i+1}. ${p.name}</span><b>${p.score.toLocaleString()}</b></div>`;
+                let p = []; s.forEach(c => p.push(c.val()));
+                p.reverse().forEach((u, i) => {
+                    list.innerHTML += `<div class="row"><span>${i+1}. ${u.name}</span><b>${u.score.toLocaleString()}</b></div>`;
                 });
             });
         };
