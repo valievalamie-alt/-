@@ -2,185 +2,278 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Rocket Tap Pro</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
             --bg-color: #0d0d0d;
-            --main-orange: #ff9f00;
-            --blue-btn: #007aff;
-            --purple-btn: #8e44ad;
+            --main-color: #ff9f00; /* Золотой/Оранжевый */
+            --text-color: #ffffff;
+            --accent-color: #3498db; /* Синий для магазина */
+            --coin-shadow: rgba(255, 159, 0, 0.4);
+            /* Жесткие размеры для кроссплатформенности */
+            --btn-padding: 15px;
+            --border-radius: 12px;
         }
         body {
             background-color: var(--bg-color);
-            color: white;
+            color: var(--text-color);
+            /* Используем единый шрифт sans-serif, который на всех телефонах выглядит почти одинаково */
             font-family: -apple-system, sans-serif;
-            margin: 0; padding: 0;
-            display: flex; flex-direction: column; align-items: center;
-            height: 100vh; overflow: hidden; user-select: none;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
         #header { margin-top: 30px; text-align: center; }
-        #score { font-size: 60px; font-weight: bold; color: var(--main-orange); margin: 0; }
+        #score { font-size: 3.5rem; font-weight: 800; text-shadow: 0 0 20px rgba(255,159,0,0.3); margin: 0; }
+        #click-pwr { font-size: 14px; color: #888; margin-top: 5px; }
         
-        #game-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; width: 100%; }
-        /* Кнопка-ракета */
+        #coin-section { flex-grow: 1; display: flex; align-items: center; justify-content: center; width: 100%; }
         #coin {
-            width: 200px; height: 200px; 
-            background: radial-gradient(circle, #ffb300, #ff8c00);
-            border-radius: 50%; border: 6px solid white;
+            width: 200px; height: 200px; /* Фиксированный размер */
+            background: linear-gradient(145deg, #ffb300, #ff8c00);
+            border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 40px rgba(255, 159, 0, 0.4);
-            transition: transform 0.05s; cursor: pointer;
-            font-size: 100px; /* Размер эмодзи ракеты */
+            font-size: 90px;
+            border: 8px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 0 50px var(--coin-shadow);
+            transition: transform 0.05s ease-out;
+            cursor: pointer;
         }
         #coin:active { transform: scale(0.92); }
 
-        #controls {
-            width: 100%; padding: 20px; box-sizing: border-box;
-            background: #1a1a1a; border-radius: 30px 30px 0 0;
-            display: flex; flex-direction: column; gap: 10px;
-            margin-bottom: 10px;
+        /* Магазин и Кейсы */
+        #shop {
+            width: 100%;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-top: 2px solid #333;
+            border-radius: 25px 25px 0 0;
+            box-sizing: border-box;
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
         }
         .btn {
-            width: 100%; height: 60px; border: none; border-radius: 16px;
-            font-size: 20px; font-weight: bold; color: white; cursor: pointer;
+            width: 100%;
+            padding: var(--btn-padding);
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+        #upgrade-btn { background: var(--accent-color); color: white; }
+        #case-btn { background: #8e44ad; color: white; }
+        .btn:disabled { background: #333; color: #555; }
+
+        /* Визуальный эффект клика */
+        .tap-effect {
+            position: absolute; color: white; font-weight: bold; font-size: 30px;
+            pointer-events: none;
+            animation: moveUp 0.8s ease-out forwards;
+        }
+        @keyframes moveUp { to { opacity: 0; transform: translateY(-100px); } }
+
+        /* Окно открытия кейса (Ультра-стабильное) */
+        #case-overlay {
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.95);
+            z-index: 1000; flex-direction: column; align-items: center; justify-content: center;
+            padding: 20px; box-sizing: border-box;
+        }
+        #case-reel-container {
+            width: 100%; max-width: 350px;
+            height: 100px;
+            background: #111;
+            border-radius: var(--border-radius);
+            position: relative; overflow: hidden;
+            border: 2px solid #333;
+        }
+        /* Тот самый "индикатор" посередине */
+        #case-reel-indicator {
+            position: absolute; left: 50%; top: 0;
+            width: 3px; height: 100%; background: #ff4444;
+            transform: translateX(-50%); z-index: 5;
+        }
+        /* Ультра-простой "прокручиватель" предметов */
+        #case-reel-inner {
+            display: flex; height: 100%;
+            position: absolute; left: 0; top: 0;
+            /* Анимация прокрутки как в CS */
+            transition: left 3s cubic-bezier(0.12, 0.8, 0.22, 1);
+        }
+        .reel-item {
+            min-width: 80px;
+            height: 100%;
             display: flex; align-items: center; justify-content: center;
+            font-size: 40px; border-right: 1px solid #222;
         }
-        #upd-btn { background: var(--blue-btn); }
-        #case-btn { background: var(--purple-btn); }
-        .btn:disabled { opacity: 0.3; }
-
-        /* Окно кейса */
-        #case-modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.98); z-index: 100; flex-direction: column;
-            align-items: center; justify-content: center;
-        }
-        #case-container {
-            width: 300px; height: 100px; border: 2px solid #444; overflow: hidden;
-            position: relative; background: #111; border-radius: 15px;
-        }
-        #case-line { position: absolute; left: 50%; top: 0; width: 3px; height: 100%; background: #ff4444; z-index: 10; transform: translateX(-50%); }
-        #case-reel { display: flex; position: absolute; left: 0; top: 0; height: 100%; transition: left 3s cubic-bezier(0.1, 0, 0.1, 1); }
-        .case-item { min-width: 100px; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 40px; border-right: 1px solid #222; }
-
-        .tap-anim { position: absolute; color: white; font-size: 32px; font-weight: bold; pointer-events: none; animation: flyUp 0.6s forwards; }
-        @keyframes flyUp { to { transform: translateY(-120px); opacity: 0; } }
+        #loot-msg { margin-top: 20px; font-weight: bold; font-size: 18px; color: var(--main-color); text-align: center; }
+        #case-close-btn { margin-top: 20px; background: #555; width: 100%; max-width: 150px; }
     </style>
 </head>
 <body>
 
     <div id="header">
-        <div id="score">0</div>
-        <div style="font-size:16px; color:#aaa; margin-top:5px">Сила: <span id="pwr-val">1</span></div>
+        <p id="score">0</p>
+        <p id="click-pwr">Сила: x1</p>
     </div>
-
-    <div id="game-area">
+    
+    <div id="coin-section">
         <div id="coin">🚀</div>
     </div>
 
-    <div id="controls">
-        <button id="upd-btn" class="btn">Upgrade (Cost: 50)</button>
-        <button id="case-btn" class="btn">🎁 Open Case (200)</button>
+    <div id="shop">
+        <button id="upgrade-btn" class="btn">Прокачка (Цена: 50)</button>
+        <button id="case-btn" class="btn">🎁 Кейс (Цена: 300)</button>
     </div>
 
-    <div id="case-modal">
-        <h2 id="case-status">Открываем...</h2>
-        <div id="case-container">
-            <div id="case-line"></div>
-            <div id="case-reel"></div>
+    <div id="case-overlay">
+        <h2>Распаковка...</h2>
+        <div id="case-reel-container">
+            <div id="case-reel-indicator"></div>
+            <div id="case-reel-inner">
+                </div>
         </div>
-        <div id="win-msg" style="margin-top:20px; font-size:22px; font-weight:bold; color:orange"></div>
-        <button onclick="closeCase()" id="close-case" class="btn" style="background:#444; width:180px; margin-top:20px; display:none">Закрыть</button>
+        <p id="loot-msg"></p>
+        <button id="case-close-btn" class="btn">Назад к полету</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
-        tg.ready();
 
-        let score = Number(localStorage.getItem('tap_sc_v5')) || 0;
-        let pwr = Number(localStorage.getItem('tap_pw_v5')) || 1;
-        let cost = Number(localStorage.getItem('tap_ct_v5')) || 50;
+        // Данные игры
+        let score = parseInt(localStorage.getItem('user_score')) || 0;
+        let clickPower = parseInt(localStorage.getItem('click_power')) || 1;
+        let upgradeCost = parseInt(localStorage.getItem('upgrade_cost')) || 50;
+        const caseCost = 300; // Фиксированная цена кейса
 
+        const scoreDisplay = document.getElementById('score');
+        const powerDisplay = document.getElementById('click-pwr');
+        const upgradeBtn = document.getElementById('upgrade-btn');
+        const caseBtn = document.getElementById('case-btn');
+        const coin = document.getElementById('coin');
+
+        // Обновление UI
         function updateUI() {
-            document.getElementById('score').innerText = Math.floor(score);
-            document.getElementById('pwr-val').innerText = pwr;
-            document.getElementById('upd-btn').innerText = `Upgrade +${pwr+1} (Cost: ${cost})`;
-            document.getElementById('upd-btn').disabled = score < cost;
-            document.getElementById('case-btn').disabled = score < 200;
+            scoreDisplay.innerText = Math.floor(score);
+            powerDisplay.innerText = `Сила: x${clickPower}`;
+            upgradeBtn.innerText = `Улучшить клик (+1) - Цена: ${upgradeCost}`;
+            upgradeBtn.disabled = score < upgradeCost;
+            caseBtn.disabled = score < caseCost;
             
-            localStorage.setItem('tap_sc_v5', score);
-            localStorage.setItem('tap_pw_v5', pwr);
-            localStorage.setItem('tap_ct_v5', cost);
+            localStorage.setItem('user_score', score);
+            localStorage.setItem('click_power', clickPower);
+            localStorage.setItem('upgrade_cost', upgradeCost);
         }
 
-        document.getElementById('coin').onclick = (e) => {
-            score += pwr;
+        // Клик по монете
+        coin.addEventListener('click', (e) => {
+            score += clickPower;
+            updateUI();
+            
             if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
-            
-            let anim = document.createElement('div');
-            anim.className = 'tap-anim';
-            anim.innerText = '+' + pwr;
-            anim.style.left = e.clientX + 'px';
-            anim.style.top = e.clientY + 'px';
-            document.body.appendChild(anim);
-            setTimeout(() => anim.remove(), 600);
-            
-            updateUI();
-        };
 
-        document.getElementById('upd-btn').onclick = () => {
-            if(score >= cost) {
-                score -= cost;
-                pwr += 1;
-                cost = Math.floor(cost * 1.6);
+            // Эффект +1
+            const effect = document.createElement('div');
+            effect.className = 'tap-effect';
+            effect.innerText = `+${clickPower}`;
+            effect.style.left = e.clientX + 'px';
+            effect.style.top = e.clientY + 'px';
+            document.body.appendChild(effect);
+            setTimeout(() => effect.remove(), 800);
+        });
+
+        // Обычная прокачка
+        upgradeBtn.addEventListener('click', () => {
+            if (score >= upgradeCost) {
+                score -= upgradeCost;
+                clickPower += 1;
+                upgradeCost = Math.floor(upgradeCost * 1.5);
                 updateUI();
+                if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
             }
-        };
+        });
 
-        const loot = ['🚀', '💰', '💎', '⭐', '🔥', '🔋', '🎁'];
-        document.getElementById('case-btn').onclick = () => {
-            if(score < 200) return;
-            score -= 200;
-            updateUI();
+        // МЕХАНИКА КЕЙСОВ
+        const lootPool = [
+            {icon: '🔋', msg: '+5 к клику!', type: 'power', val: 5},
+            {icon: '🔋', msg: '+5 к клику!', type: 'power', val: 5}, // Дублируем, чтобы был шанс 66%
+            {icon: '💰', msg: 'Мгновенно +100!', type: 'score', val: 100}, // Меньше шанс (33%)
+        ];
+
+        caseBtn.addEventListener('click', () => {
+            if (score >= caseCost) {
+                score -= caseCost;
+                updateUI();
+                openCase();
+            }
+        });
+
+        function openCase() {
+            if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
             
-            const modal = document.getElementById('case-modal');
-            const reel = document.getElementById('case-reel');
-            const winMsg = document.getElementById('win-msg');
-            const closeBtn = document.getElementById('close-case');
-            
-            modal.style.display = 'flex';
-            winMsg.innerText = "";
+            const overlay = document.getElementById('case-overlay');
+            const reel = document.getElementById('case-reel-inner');
+            const lootMsg = document.getElementById('loot-msg');
+            const closeBtn = document.getElementById('case-close-btn');
+
+            lootMsg.innerText = "";
             closeBtn.style.display = 'none';
-            reel.style.transition = 'none';
-            reel.style.left = '0px';
+            overlay.style.display = 'flex';
 
-            reel.innerHTML = '';
-            for(let i=0; i<40; i++) {
-                let div = document.createElement('div');
-                div.className = 'case-item';
-                div.innerText = loot[Math.floor(Math.random()*loot.length)];
-                reel.appendChild(div);
+            // Генерируем 15 случайных предметов для "прокрутки"
+            reel.innerHTML = "";
+            let itemsHTML = "";
+            for(let i=0; i<15; i++) {
+                const randomLoot = lootPool[Math.floor(Math.random() * lootPool.length)];
+                itemsHTML += `<div class="reel-item">${randomLoot.icon}</div>`;
             }
+            reel.innerHTML = itemsHTML;
+            
+            // Финальный (выпавший) предмет
+            const loot = lootPool[Math.floor(Math.random() * lootPool.length)];
+            const finalItemHTML = `<div class="reel-item">${loot.icon}</div>`;
+            reel.insertAdjacentHTML('beforeend', finalItemHTML);
 
+            // "Крутим" как в CS (очень просто, сдвигом)
+            reel.style.transition = 'none'; // Сначала сбрасываем
+            reel.style.left = '0'; // Перематываем в начало
             setTimeout(() => {
-                reel.style.transition = 'left 3s cubic-bezier(0.1, 0, 0.1, 1)';
-                reel.style.left = '-3000px';
-            }, 50);
+                reel.style.transition = 'left 3s cubic-bezier(0.12, 0.8, 0.22, 1)';
+                // Сдвигаем на 15 предметов, чтобы финальный был посередине
+                reel.style.left = `-${15 * 80}px`;
+            }, 100);
 
+            // Логика выпадения (Через 3.5 секунды, когда анимация закончится)
             setTimeout(() => {
-                const prize = Math.random();
-                if(prize > 0.9) { pwr += 15; winMsg.innerText = "JACKPOT! +15 к силе!"; }
-                else if(prize > 0.6) { score += 1500; winMsg.innerText = "УДАЧА! +1500 монет!"; }
-                else { pwr += 3; winMsg.innerText = "ПРИЗ! +3 к силе"; }
-                closeBtn.style.display = 'flex';
+                lootMsg.innerText = loot.msg;
+                
+                if (loot.type === 'power') clickPower += loot.val;
+                if (loot.type === 'score') score += loot.val;
+                
                 updateUI();
-            }, 3200);
-        };
+                closeBtn.style.display = 'block';
+                if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+            }, 3500);
+        }
 
-        function closeCase() { document.getElementById('case-modal').style.display = 'none'; }
-        updateUI();
+        // Закрыть окно кейса
+        document.getElementById('case-close-btn').onclick = () => {
+            document.getElementById('case-overlay').style.display = 'none';
+        }
+
+        updateUI(); // Запуск при старте
     </script>
 </body>
 </html>
