@@ -9,89 +9,48 @@
     <style>
         :root { --bg: #000; --orange: #ff9f00; --blue: #007aff; --pulp: #8e44ad; }
         
-        body { 
-            background: var(--bg); 
-            color: white; 
-            font-family: -apple-system, system-ui, sans-serif; 
-            margin: 0; padding: 0; 
-            height: 100vh; 
-            display: flex; flex-direction: column; 
-            overflow: hidden; 
-        }
+        body { background: var(--bg); color: white; font-family: -apple-system, sans-serif; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* Фикс для iPhone 14 Pro Max */
-        #header { 
-            padding-top: env(safe-area-inset-top); 
-            height: 120px; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center;
-            text-align: center;
-        }
+        /* Фикс для высоких iPhone */
+        #header { padding-top: env(safe-area-inset-top); height: 110px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
+        #score { font-size: 50px; font-weight: 900; color: var(--orange); margin: 0; font-variant-numeric: tabular-nums; }
+        #nick { font-size: 13px; color: #888; margin-top: 5px; opacity: 0.8; }
 
-        #score { 
-            font-size: 52px; 
-            font-weight: 900; 
-            color: var(--orange); 
-            margin: 0;
-            line-height: 1;
-            /* Чтобы цифры не прыгали при смене */
-            font-variant-numeric: tabular-nums;
-            letter-spacing: -1px;
-        }
-
-        #nick { font-size: 13px; color: #888; margin-top: 8px; opacity: 0.8; }
-
-        #game { flex-grow: 1; display: flex; align-items: center; justify-content: center; }
+        /* Игровое поле с анимацией */
+        #game { flex-grow: 1; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
         
         #coin { 
-            width: 210px; height: 210px; 
+            width: 200px; height: 200px; 
             background: radial-gradient(circle, #ffb300, #ff8c00); 
-            border-radius: 50%; 
-            border: 6px solid #fff; 
-            font-size: 85px; 
-            display: flex; align-items: center; justify-content: center; 
-            box-shadow: 0 0 40px rgba(255,159,0,0.4); 
-            cursor: pointer; 
-            transition: transform 0.05s; 
-            -webkit-tap-highlight-color: transparent; 
+            border-radius: 50%; border: 5px solid #fff; 
+            font-size: 80px; display: flex; align-items: center; justify-content: center; 
+            box-shadow: 0 0 35px rgba(255,159,0,0.4); 
+            cursor: pointer; transition: transform 0.05s; -webkit-tap-highlight-color: transparent; 
+            position: relative; z-index: 10;
         }
-        #coin:active { transform: scale(0.92); }
+        #coin:active { transform: scale(0.92); animation: shake 0.1s; }
 
-        #menu { 
-            background: #1c1c1e; 
-            padding: 15px 15px calc(15px + env(safe-area-inset-bottom)); 
-            border-radius: 28px 28px 0 0; 
-            display: grid; 
-            grid-template-columns: 1fr 1fr; 
-            gap: 12px; 
+        /* АНИМАЦИЯ: Вылетающие цифры */
+        @keyframes floatUp {
+            0% { transform: translate(-50%, -50px) scale(1); opacity: 1; }
+            100% { transform: translate(-50%, -130px) scale(1.1); opacity: 0; }
         }
+        .pop-num { position: absolute; left: 50%; top: 50%; font-size: 26px; font-weight: bold; color: #fff; text-shadow: 0 0 10px rgba(0,0,0,0.5); pointer-events: none; z-index: 20; animation: floatUp 1s ease-out forwards; }
+        
+        @keyframes shake { 0% { left:-2px; } 50% { left:2px; } 100% { left:0px; } }
 
-        .btn { 
-            height: 58px; 
-            border: none; 
-            border-radius: 18px; 
-            font-weight: bold; 
-            color: white; 
-            font-size: 15px; 
-            cursor: pointer; 
-        }
-
+        #menu { background: #1c1c1e; padding: 15px 15px calc(15px + env(safe-area-inset-bottom)); border-radius: 25px 25px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn { height: 55px; border: none; border-radius: 16px; font-weight: bold; color: white; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         #upd-btn { background: var(--blue); }
         #case-btn { background: var(--pulp); }
-        #top-btn { background: #3a3a3c; grid-column: span 2; font-size: 13px; color: #ccc; }
+        #top-btn { background: #3a3a3c; grid-column: span 2; font-size: 12px; color: #ccc; }
 
-        /* Модалка Лидерборда 12px */
-        .modal { 
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.97); z-index: 1000; 
-            flex-direction: column; align-items: center; justify-content: center; 
-        }
+        /* Модалка */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.97); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; }
         #top-list { width: 90%; background: #1c1c1e; border-radius: 20px; margin: 15px 0; max-height: 55vh; overflow-y: auto; }
         .row { display: flex; justify-content: space-between; padding: 10px 16px; border-bottom: 1px solid #2c2c2e; font-size: 12px; }
         .row b { color: var(--orange); }
-        .row.me { background: rgba(0, 122, 255, 0.15); border-left: 3px solid var(--blue); }
+        .row.me { background: rgba(0, 122, 255, 0.12); }
     </style>
 </head>
 <body>
@@ -112,9 +71,9 @@
     </div>
 
     <div id="top-modal" class="modal">
-        <h2 style="font-size: 22px; margin-bottom: 10px;">Топ Игроков</h2>
+        <h2 style="font-size: 20px;">Топ Игроков</h2>
         <div id="top-list"></div>
-        <button onclick="document.getElementById('top-modal').style.display='none'" class="btn" style="background:#444; width:130px; height: 45px;">Назад</button>
+        <button onclick="document.getElementById('top-modal').style.display='none'" class="btn" style="background:#444; width:120px; height: 40px; margin-top: 10px;">Назад</button>
     </div>
 
     <script>
@@ -131,43 +90,67 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const tg = window.Telegram.WebApp;
-        tg.expand();
+        if (tg) tg.expand();
         
         const userId = tg.initDataUnsafe?.user?.id || "guest_" + Math.floor(Math.random()*1000);
         const userNick = tg.initDataUnsafe?.user?.first_name || "Пилот";
         document.getElementById('nick').innerText = "Пилот: " + userNick;
 
-        // sc_v14 для чистого старта
-        let score = Number(localStorage.getItem('sc_v14')) || 0;
-        let pwr = Number(localStorage.getItem('pw_v14')) || 1;
-        let cost = Number(localStorage.getItem('ct_v14')) || 50;
+        // sc_v15 для чистого старта
+        let score = Number(localStorage.getItem('sc_v15')) || 0;
+        let pwr = Number(localStorage.getItem('pw_v15')) || 1;
+        let cost = Number(localStorage.getItem('ct_v15')) || 50;
+        let lastDay = localStorage.getItem('last_v15') || "";
 
         function refresh() {
             document.getElementById('score').innerText = Math.floor(score).toLocaleString();
             document.getElementById('upd-btn').innerText = `Up (+1) • ${cost}`;
-            
-            // Визуальное отключение кнопок
             document.getElementById('upd-btn').style.opacity = score < cost ? "0.5" : "1";
             document.getElementById('case-btn').style.opacity = score < 200 ? "0.5" : "1";
             
-            localStorage.setItem('sc_v14', score);
-            localStorage.setItem('pw_v14', pwr);
-            localStorage.setItem('ct_v14', cost);
+            localStorage.setItem('sc_v15', score);
+            localStorage.setItem('pw_v15', pwr);
+            localStorage.setItem('ct_v15', cost);
             
             db.ref('users/' + userId).set({ name: userNick, score: Math.floor(score) });
         }
 
+        // КОД ДЛЯ ВЫЛЕТАЮЩИХ ЧИСЕЛ
+        function createPopNumber(num) {
+            const el = document.createElement("div");
+            el.className = "pop-num";
+            el.innerText = "+" + num;
+            document.getElementById("game").appendChild(el);
+            setTimeout(() => { el.remove(); }, 1000); // Удалить через секунду
+        }
+
+        // Клик по ракете
         document.getElementById('coin').onclick = () => {
             score += pwr;
             if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+            createPopNumber(pwr); // Вылетают числа
             refresh();
         };
+
+        // КОД ЕЖЕДНЕВНОГО БОНУСА
+        function checkDailyBonus() {
+            const today = new Date().toLocaleDateString();
+            if (lastDay !== today) {
+                // Выдаем бонус
+                const bonus = 500;
+                score += bonus;
+                localStorage.setItem('last_v15', today);
+                refresh();
+                if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+                tg.showAlert("📅 Ежедневный бонус: +" + bonus + " тапов!");
+            }
+        }
 
         document.getElementById('upd-btn').onclick = () => {
             if(score >= cost) {
                 score -= cost;
                 pwr += 1;
-                cost = Math.round(cost * 1.6);
+                cost = Math.round(cost * 1.5);
                 refresh();
             }
         };
@@ -175,9 +158,9 @@
         document.getElementById('case-btn').onclick = () => {
             if(score >= 200) {
                 score -= 200;
-                // Рандом от 150 до 1200
-                const win = Math.floor(Math.random() * (1200 - 150 + 1)) + 150;
+                const win = Math.floor(Math.random() * (1000 - 150 + 1)) + 150;
                 score += win;
+                if(tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
                 tg.showAlert("🎁 Тебе выпало " + win + " тапов!");
                 refresh();
             } else {
@@ -189,7 +172,6 @@
             const list = document.getElementById('top-list');
             list.innerHTML = "<div class='row'>Загрузка...</div>";
             document.getElementById('top-modal').style.display = 'flex';
-
             db.ref('users').orderByChild('score').limitToLast(15).once('value', (snapshot) => {
                 list.innerHTML = "";
                 let players = [];
@@ -202,6 +184,7 @@
         };
 
         refresh();
+        checkDailyBonus(); // Проверка бонуса при запуске
     </script>
 </body>
 </html>
