@@ -35,29 +35,24 @@
         #top-btn { background: var(--gray); }
         #settings-btn { background: #3a3a3c; grid-column: span 2; margin-top: 5px; }
 
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10000; flex-direction: column; align-items: center; justify-content: center; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 10000; flex-direction: column; align-items: center; justify-content: center; }
         .modal-content { width: 85%; background: #1c1c1e; border-radius: 20px; padding: 25px; box-sizing: border-box; text-align: center; }
         .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #333; }
 
         #top-list { width: 100%; max-height: 40vh; overflow-y: auto; margin-top: 10px; }
         .row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #333; font-size: 14px; }
-        
-        #roulette-container { width: 100%; height: 80px; border: 1px solid #333; position: relative; overflow: hidden; background: #000; margin: 15px 0; border-radius: 8px; }
-        #roulette-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: red; z-index: 5; }
-        #roulette-track { display: flex; position: absolute; left: 0; top: 0; height: 100%; }
-        .item { min-width: 70px; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; border-right: 1px solid #111; }
     </style>
 </head>
 <body>
 
-    <audio id="bg-audio" loop preload="auto">
-        <source src="https://cdn.pixabay.com/audio/2022/03/15/audio_783858648b.mp3" type="audio/mpeg">
+    <audio id="bg-audio" loop preload="auto" crossorigin="anonymous">
+        <source src="https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Ketsa/Raising_Frequecy/Ketsa_-_08_-_Raising_Frequency.mp3" type="audio/mpeg">
     </audio>
 
     <div id="header">
         <div id="score">0</div>
         <div id="stats-bar">
-            <div class="stat-item">Доход: <b id="pwr-val">+1</b></div>
+            <div class="stat-item">Тап: <b id="pwr-val">+1</b></div>
             <div class="stat-item">Серия: <b id="streak-val">0</b></div>
         </div>
     </div>
@@ -69,8 +64,8 @@
     <div id="menu">
         <button id="upd-btn" class="btn">Улучшить</button>
         <button id="case-btn" class="btn">Кейс 350</button>
-        <button id="daily-btn" class="btn">🎁 Подарок</button>
-        <button id="top-btn" class="btn">Лидерборд</button>
+        <button id="daily-btn" class="btn">Подарок</button>
+        <button id="top-btn" class="btn">Топ</button>
         <button id="settings-btn" class="btn">⚙️ НАСТРОЙКИ</button>
     </div>
 
@@ -79,29 +74,14 @@
             <h2 style="margin: 0 0 20px 0;">Настройки</h2>
             <div class="setting-row">
                 <span>Музыка</span>
-                <button id="toggle-music" class="btn" style="width:100px; height:35px; background:var(--blue);">ВКЛ</button>
+                <button id="toggle-music" class="btn" style="width:80px; height:35px; background:var(--blue);">ВКЛ</button>
             </div>
             <button onclick="document.getElementById('settings-modal').style.display='none'" class="btn" style="background:#444; width:100%; margin-top:25px;">ЗАКРЫТЬ</button>
         </div>
     </div>
 
-    <div id="case-modal" class="modal">
-        <div class="modal-content">
-            <h3 id="case-status">Открываем...</h3>
-            <div id="roulette-container"><div id="roulette-line"></div><div id="roulette-track"></div></div>
-            <button id="close-case" class="btn" style="display:none; background:var(--blue); width:100%;">ЗАБРАТЬ</button>
-        </div>
-    </div>
-
-    <div id="top-modal" class="modal">
-        <div class="modal-content">
-            <h2>Топ Игроков</h2>
-            <div id="top-list"></div>
-            <button onclick="document.getElementById('top-modal').style.display='none'" class="btn" style="background:#444; width:100%; margin-top:15px;">НАЗАД</button>
-        </div>
-    </div>
-
     <script>
+        // ... Конфиг Firebase такой же ...
         const firebaseConfig = {
             apiKey: "AIzaSyAhFyYz8tC0VZqNKQweM1VH7A9rzcLQ7L4",
             authDomain: "rockettap-22e98.firebaseapp.com",
@@ -114,26 +94,41 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const tg = window.Telegram.WebApp;
-        tg.expand();
-
-        const userId = tg.initDataUnsafe?.user?.id || "guest";
-        let score = Number(localStorage.getItem('sc_v35')) || 0;
-        let pwr = Number(localStorage.getItem('pw_v35')) || 1;
-        let cost = Number(localStorage.getItem('ct_v35')) || 50;
-        let streak = Number(localStorage.getItem('str_v35')) || 0;
-        let lastDate = localStorage.getItem('ld_v35') || "";
-        
         const audio = document.getElementById('bg-audio');
         let musicOn = false;
 
-        // Включение музыки в настройках
+        const userId = tg.initDataUnsafe?.user?.id || "guest";
+        let score = Number(localStorage.getItem('sc_v40')) || 0;
+        let pwr = Number(localStorage.getItem('pw_v40')) || 1;
+        let cost = Number(localStorage.getItem('ct_v40')) || 50;
+        let streak = Number(localStorage.getItem('str_v40')) || 0;
+        let lastDate = localStorage.getItem('ld_v40') || "";
+
+        function refresh() {
+            document.getElementById('score').innerText = Math.floor(score).toLocaleString();
+            document.getElementById('pwr-val').innerText = "+" + pwr;
+            document.getElementById('streak-val').innerText = streak;
+            document.getElementById('upd-btn').className = score < cost ? "btn locked" : "btn";
+            document.getElementById('upd-btn').innerText = `Up (${cost})`;
+            document.getElementById('case-btn').className = score < 350 ? "btn locked" : "btn";
+            localStorage.setItem('sc_v40', score);
+            localStorage.setItem('pw_v40', pwr);
+            localStorage.setItem('ct_v40', cost);
+            localStorage.setItem('str_v40', streak);
+            localStorage.setItem('ld_v40', lastDate);
+            db.ref('users/' + userId).set({ name: tg.initDataUnsafe?.user?.first_name || "Пилот", score: Math.floor(score) });
+        }
+
+        // ВКЛЮЧЕНИЕ МУЗЫКИ
         document.getElementById('toggle-music').onclick = function() {
             if(!musicOn) {
                 audio.play().then(() => {
                     this.innerText = "ВЫКЛ";
                     this.style.background = "#ff3b30";
                     musicOn = true;
-                }).catch(e => tg.showAlert("Сначала кликни по ракете!"));
+                }).catch(e => {
+                    tg.showAlert("Сначала тапни по ракете, а потом включай!");
+                });
             } else {
                 audio.pause();
                 this.innerText = "ВКЛ";
@@ -142,38 +137,12 @@
             }
         };
 
-        function refresh() {
-            document.getElementById('score').innerText = Math.floor(score).toLocaleString();
-            document.getElementById('pwr-val').innerText = "+" + pwr;
-            document.getElementById('streak-val').innerText = streak;
-
-            const uBtn = document.getElementById('upd-btn');
-            uBtn.innerText = `Up (${cost})`;
-            uBtn.className = score < cost ? "btn locked" : "btn";
-
-            const cBtn = document.getElementById('case-btn');
-            cBtn.className = score < 350 ? "btn locked" : "btn";
-
-            const today = new Date().toLocaleDateString();
-            const gBtn = document.getElementById('daily-btn');
-            if (lastDate === today) { gBtn.className = "btn taken-gift"; gBtn.innerText = "Взято"; }
-            else { gBtn.className = "btn active-gift"; gBtn.innerText = "Подарок"; }
-
-            localStorage.setItem('sc_v35', score);
-            localStorage.setItem('pw_v35', pwr);
-            localStorage.setItem('ct_v35', cost);
-            localStorage.setItem('str_v35', streak);
-            localStorage.setItem('ld_v35', lastDate);
-            db.ref('users/' + userId).set({ name: tg.initDataUnsafe?.user?.first_name || "Пилот", score: Math.floor(score) });
-        }
-
         document.getElementById('game').onclick = (e) => {
-            // Разблокировка аудио для iOS при первом клике
+            // ФИКС ДЛЯ APPLE: Активируем аудио-контекст при первом тапе
             if (audio.paused && !musicOn) {
-                audio.muted = true;
-                audio.play().then(() => { audio.pause(); audio.muted = false; });
+                audio.play().then(() => { audio.pause(); }).catch(err => {});
             }
-            
+
             score += pwr;
             const pop = document.createElement('div');
             pop.className = 'pop-num';
@@ -186,58 +155,8 @@
             refresh();
         };
 
-        document.getElementById('upd-btn').onclick = () => { if(score >= cost) { score -= cost; pwr++; cost = Math.round(cost * 1.7); refresh(); } };
         document.getElementById('settings-btn').onclick = () => document.getElementById('settings-modal').style.display = 'flex';
-        document.getElementById('top-btn').onclick = () => {
-            const list = document.getElementById('top-list');
-            list.innerHTML = "Загрузка...";
-            document.getElementById('top-modal').style.display = 'flex';
-            db.ref('users').orderByChild('score').limitToLast(10).once('value', (s) => {
-                list.innerHTML = "";
-                let arr = []; s.forEach(x => arr.push(x.val()));
-                arr.reverse().forEach((p, i) => { list.innerHTML += `<div class="row"><span>${i+1}. ${p.name}</span><b>${p.score}</b></div>`; });
-            });
-        };
-
-        document.getElementById('daily-btn').onclick = () => {
-            const today = new Date().toLocaleDateString();
-            if (lastDate === today) return;
-            const yes = new Date(); yes.setDate(yes.getDate()-1);
-            streak = (lastDate === yes.toLocaleDateString()) ? streak + 1 : 1;
-            score += streak * 250; lastDate = today; refresh();
-            tg.showAlert(`Бонус: ${streak * 250} тапов!`);
-        };
-
-        const items = [{v:50,c:'#555',p:70},{v:500,c:'cyan',p:20},{v:10000,c:'gold',p:10}];
-        document.getElementById('case-btn').onclick = () => {
-            if(score < 350) return;
-            score -= 350; refresh();
-            const modal = document.getElementById('case-modal');
-            const track = document.getElementById('roulette-track');
-            modal.style.display = 'flex';
-            document.getElementById('close-case').style.display = 'none';
-            track.style.transition = 'none'; track.style.transform = 'translateX(0)'; track.innerHTML = '';
-            let pool = [];
-            for(let i=0; i<40; i++) {
-                let r = Math.random()*100, acc = 0, sel = items[0];
-                for(let it of items) { acc += it.p; if(r <= acc) { sel = it; break; } }
-                pool.push(sel);
-                track.innerHTML += `<div class="item" style="color:${sel.c}">${sel.v}</div>`;
-            }
-            setTimeout(() => {
-                track.style.transition = 'transform 3s cubic-bezier(0.1, 0, 0.1, 1)';
-                track.style.transform = `translateX(-${(35 * 70) - 110}px)`;
-            }, 50);
-            setTimeout(() => {
-                let win = pool[35].v; score += win; refresh();
-                document.getElementById('case-status').innerText = "Выпало: " + win;
-                document.getElementById('close-case').style.display = 'block';
-            }, 3200);
-        };
-        document.getElementById('close-case').onclick = () => {
-            document.getElementById('case-modal').style.display = 'none';
-            document.getElementById('case-status').innerText = "Открываем...";
-        };
+        document.getElementById('upd-btn').onclick = () => { if(score >= cost) { score -= cost; pwr++; cost = Math.round(cost * 1.7); refresh(); } };
 
         refresh();
     </script>
