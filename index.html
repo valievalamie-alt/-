@@ -3,176 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Rocket Tap Game</title>
+    <title>Rocket Tap</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root {
-            --bg-color: #0d0d0d;
-            --main-color: #ff9f00;
-            --text-color: #ffffff;
-            --accent-color: #3498db;
-        }
         body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: 'Segoe UI', sans-serif;
+            background-color: #0d0d0d;
+            color: white;
+            font-family: sans-serif;
             margin: 0;
+            height: 100vh;
             display: flex;
             flex-direction: column;
+            justify-content: space-between; /* Распределяем элементы: верх, центр, низ */
             align-items: center;
-            height: 100vh;
             overflow: hidden;
             user-select: none;
         }
-        #header {
-            margin-top: 30px;
-            text-align: center;
-        }
-        #score {
-            font-size: 3.5rem;
-            font-weight: 800;
-            text-shadow: 0 0 20px var(--main-color);
-            margin: 0;
-        }
-        #click-power {
-            color: var(--accent-color);
-            font-size: 1rem;
-            margin-top: 5px;
-        }
-        .coin-container {
-            flex-grow: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-        }
+        #header { margin-top: 20px; text-align: center; }
+        #score { font-size: 3.5rem; font-weight: bold; color: #ff9f00; margin: 0; }
+        
+        #coin-section { flex-grow: 1; display: flex; align-items: center; justify-content: center; }
         #coin {
-            width: 220px;
-            height: 220px;
-            background: linear-gradient(145deg, #ffb300, #ff8c00);
-            border-radius: 50%;
-            box-shadow: 0 0 50px rgba(255, 159, 0, 0.4);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 100px;
-            border: 8px solid rgba(255, 255, 255, 0.2);
-            transition: transform 0.05s;
-            cursor: pointer;
+            width: 200px; height: 200px; background: orange;
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-size: 80px;
+            box-shadow: 0 0 30px rgba(255, 165, 0, 0.5);
+            cursor: pointer; transition: transform 0.1s;
         }
         #coin:active { transform: scale(0.9); }
 
-        /* Магазин */
-        #shop {
+        #shop-section {
             width: 100%;
-            background: rgba(255, 255, 255, 0.05);
             padding: 20px;
-            border-radius: 25px 25px 0 0;
+            background: #1a1a1a;
+            border-top: 2px solid #333;
             box-sizing: border-box;
-            text-align: center;
+            margin-bottom: 10px; /* Чтобы не прилипало к краю в ТГ */
         }
         .upgrade-btn {
-            background: var(--accent-color);
+            width: 100%;
+            padding: 15px;
+            background: #3498db;
             color: white;
             border: none;
-            padding: 15px 30px;
-            border-radius: 15px;
-            font-size: 1.1rem;
+            border-radius: 12px;
+            font-size: 18px;
             font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            max-width: 300px;
         }
-        .upgrade-btn:disabled {
-            background: #444;
-            opacity: 0.6;
-        }
+        .upgrade-btn:disabled { background: #444; color: #888; }
 
         .tap-effect {
-            position: absolute;
-            color: white;
-            font-weight: bold;
-            font-size: 28px;
-            pointer-events: none;
-            animation: moveUp 0.8s ease-out forwards;
+            position: absolute; color: white; font-weight: bold;
+            font-size: 24px; pointer-events: none;
+            animation: moveUp 0.8s forwards;
         }
-        @keyframes moveUp {
-            0% { opacity: 1; transform: translateY(0); }
-            100% { opacity: 0; transform: translateY(-100px); }
-        }
+        @keyframes moveUp { to { opacity: 0; transform: translateY(-100px); } }
     </style>
 </head>
 <body>
 
     <div id="header">
-        <p id="score">0</p>
-        <p id="click-power">Сила клика: x1</p>
+        <div id="score">0</div>
+        <div id="stats">Сила клика: <span id="pwr">1</span></div>
     </div>
     
-    <div class="coin-container">
+    <div id="coin-section">
         <div id="coin">🚀</div>
     </div>
 
-    <div id="shop">
-        <button id="upgrade-btn" class="upgrade-btn">Улучшить клик (Цена: 50)</button>
+    <div id="shop-section">
+        <button id="upgrade-btn" class="upgrade-btn">Загрузка...</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Данные игры
-        let score = parseInt(localStorage.getItem('score')) || 0;
-        let clickPower = parseInt(localStorage.getItem('clickPower')) || 1;
-        let upgradeCost = parseInt(localStorage.getItem('upgradeCost')) || 50;
+        let score = Number(localStorage.getItem('score')) || 0;
+        let pwr = Number(localStorage.getItem('pwr')) || 1;
+        let cost = Number(localStorage.getItem('cost')) || 50;
 
-        const scoreDisplay = document.getElementById('score');
-        const powerDisplay = document.getElementById('click-power');
-        const upgradeBtn = document.getElementById('upgrade-btn');
+        const scoreEl = document.getElementById('score');
+        const pwrEl = document.getElementById('pwr');
+        const btn = document.getElementById('upgrade-btn');
         const coin = document.getElementById('coin');
 
-        // Обновление экрана
-        function updateUI() {
-            scoreDisplay.innerText = Math.floor(score);
-            powerDisplay.innerText = `Сила клика: x${clickPower}`;
-            upgradeBtn.innerText = `Улучшить клик (Цена: ${upgradeCost})`;
-            upgradeBtn.disabled = score < upgradeCost;
-            
+        function update() {
+            scoreEl.innerText = Math.floor(score);
+            pwrEl.innerText = pwr;
+            btn.innerText = `Улучшить клик (Цена: ${cost})`;
+            btn.disabled = score < cost;
             localStorage.setItem('score', score);
-            localStorage.setItem('clickPower', clickPower);
-            localStorage.setItem('upgradeCost', upgradeCost);
+            localStorage.setItem('pwr', pwr);
+            localStorage.setItem('cost', cost);
         }
 
-        // Клик по монете
-        coin.addEventListener('click', (e) => {
-            score += clickPower;
-            updateUI();
-            tg.HapticFeedback.impactOccurred('medium');
-            createEffect(e.clientX, e.clientY, `+${clickPower}`);
-        });
+        coin.onclick = (e) => {
+            score += pwr;
+            if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+            
+            const effect = document.createElement('div');
+            effect.className = 'tap-effect';
+            effect.innerText = '+' + pwr;
+            effect.style.left = e.clientX + 'px';
+            effect.style.top = e.clientY + 'px';
+            document.body.appendChild(effect);
+            setTimeout(() => effect.remove(), 800);
+            
+            update();
+        };
 
-        // Покупка апгрейда
-        upgradeBtn.addEventListener('click', () => {
-            if (score >= upgradeCost) {
-                score -= upgradeCost;
-                clickPower += 1;
-                upgradeCost = Math.floor(upgradeCost * 1.5); // Цена растет в 1.5 раза
-                updateUI();
-                tg.HapticFeedback.notificationOccurred('success');
+        btn.onclick = () => {
+            if (score >= cost) {
+                score -= cost;
+                pwr += 1;
+                cost = Math.floor(cost * 1.5);
+                update();
             }
-        });
+        };
 
-        function createEffect(x, y, text) {
-            const el = document.createElement('div');
-            el.className = 'tap-effect';
-            el.innerText = text;
-            el.style.left = `${x}px`;
-            el.style.top = `${y}px`;
-            document.body.appendChild(el);
-            setTimeout(() => el.remove(), 800);
-        }
-
-        updateUI(); // Запуск при старте
+        update();
     </script>
 </body>
 </html>
