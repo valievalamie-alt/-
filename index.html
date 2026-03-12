@@ -4,50 +4,45 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
         :root { --bg: #000; --orange: #ff9f00; --blue: #007aff; --purple: #8e44ad; }
-        body { background: var(--bg); color: white; font-family: -apple-system, sans-serif; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; user-select: none; }
-        
-        /* Шапка */
-        #header { padding: 25px 20px 5px; text-align: center; }
-        #score { font-size: 50px; font-weight: bold; color: var(--orange); margin: 0; text-shadow: 0 0 15px rgba(255,159,0,0.3); }
-        #nick { font-size: 13px; color: #888; margin-top: 5px; }
-
-        /* Центр */
+        body { background: var(--bg); color: white; font-family: -apple-system, sans-serif; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        #header { padding: 20px 20px 5px; text-align: center; }
+        #score { font-size: 45px; font-weight: bold; color: var(--orange); margin: 0; }
+        #nick { font-size: 12px; color: #888; }
         #game { flex-grow: 1; display: flex; align-items: center; justify-content: center; }
-        #coin { width: 210px; height: 210px; background: radial-gradient(circle, #ffb300, #ff8c00); border-radius: 50%; border: 5px solid #fff; font-size: 90px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 40px rgba(255,159,0,0.4); cursor: pointer; transition: transform 0.05s; }
-        #coin:active { transform: scale(0.92); }
-
-        /* Кнопки меню */
-        #menu { background: #1a1a1a; padding: 15px; border-radius: 25px 25px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-bottom: 35px; }
-        .btn { height: 55px; border: none; border-radius: 15px; font-weight: bold; color: white; font-size: 15px; cursor: pointer; }
+        #coin { width: 180px; height: 180px; background: radial-gradient(circle, #ffb300, #ff8c00); border-radius: 50%; border: 4px solid #fff; font-size: 70px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 25px rgba(255,159,0,0.4); cursor: pointer; transition: transform 0.05s; -webkit-tap-highlight-color: transparent; }
+        #coin:active { transform: scale(0.95); }
+        #menu { background: #1a1a1a; padding: 12px; border-radius: 20px 20px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-bottom: 30px; }
+        .btn { height: 50px; border: none; border-radius: 12px; font-weight: bold; color: white; font-size: 13px; cursor: pointer; }
         #upd-btn { background: var(--blue); }
         #case-btn { background: var(--purple); }
         #top-btn { background: #333; grid-column: span 2; }
 
-        /* Модалка Лидерборда (КОМПАКТНАЯ) */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 100; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 40px; box-sizing: border-box; }
-        #top-list { width: 90%; background: #111; border-radius: 15px; margin: 15px 0; max-height: 60vh; overflow-y: auto; border: 1px solid #222; }
+        /* МИНИ-ЛИДЕРБОРД */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); z-index: 100; flex-direction: column; align-items: center; justify-content: center; }
+        #top-list { width: 90%; background: #111; border-radius: 12px; margin: 10px 0; max-height: 70vh; overflow-y: auto; border: 1px solid #222; }
         
+        /* Тут уменьшаем шрифт строк */
         .row { 
             display: flex; justify-content: space-between; align-items: center;
-            padding: 10px 15px; border-bottom: 1px solid #222; font-size: 15px; 
+            padding: 6px 12px; /* Маленькие отступы */
+            border-bottom: 1px solid #222; 
+            font-size: 12px; /* Маленький шрифт */
+            color: #ccc;
         }
-        .row span { 
-            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
-            max-width: 60%; color: #eee;
-        }
-        .row b { color: var(--orange); font-family: monospace; font-size: 16px; }
-        .row.me { background: rgba(255,159,0,0.1); }
+        .row span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%; }
+        .row b { color: var(--orange); font-size: 13px; font-family: monospace; }
+        .row.me { background: rgba(255,159,0,0.08); color: #fff; }
     </style>
 </head>
 <body>
 
     <div id="header">
         <div id="score">0</div>
-        <div id="nick">Загрузка...</div>
+        <div id="nick">...</div>
     </div>
 
     <div id="game">
@@ -55,19 +50,18 @@
     </div>
 
     <div id="menu">
-        <button id="upd-btn" class="btn">Upgrade • 50</button>
-        <button id="case-btn" class="btn">🎁 Case (200)</button>
+        <button id="upd-btn" class="btn">Upgrade</button>
+        <button id="case-btn" class="btn">🎁 Case</button>
         <button id="top-btn" class="btn">🏆 ЛИДЕРБОРД</button>
     </div>
 
     <div id="top-modal" class="modal">
-        <h2 style="margin: 0; font-size: 22px;">Топ Игроков</h2>
+        <h2 style="font-size: 18px; margin-bottom: 5px;">Топ Игроков</h2>
         <div id="top-list"></div>
-        <button onclick="document.getElementById('top-modal').style.display='none'" class="btn" style="background:#444; width:140px; height: 45px;">Назад</button>
+        <button onclick="document.getElementById('top-modal').style.display='none'" class="btn" style="background:#444; width:100px; height: 35px; font-size: 12px;">Назад</button>
     </div>
 
     <script>
-        // ТВОИ КЛЮЧИ FIREBASE
         const firebaseConfig = {
             apiKey: "AIzaSyAhFyYz8tC0VZqNKQweM1VH7A9rzcLQ7L4",
             authDomain: "rockettap-22e98.firebaseapp.com",
@@ -77,38 +71,36 @@
             messagingSenderId: "800263373343",
             appId: "1:800263373343:web:ed6db2e822f61d8257cb2a"
         };
+
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
         const tg = window.Telegram.WebApp;
-        tg.expand();
+        if (tg) tg.expand();
         
-        const userId = tg.initDataUnsafe?.user?.id || "guest_" + Math.floor(Math.random()*1000);
-        const userNick = tg.initDataUnsafe?.user?.first_name || "Пилот";
+        const userId = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user.id : "guest_" + Math.floor(Math.random()*1000);
+        const userNick = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user) ? tg.initDataUnsafe.user.first_name : "Пилот";
         document.getElementById('nick').innerText = "Пилот: " + userNick;
 
-        let score = Number(localStorage.getItem('sc_v9')) || 0;
-        let pwr = Number(localStorage.getItem('pw_v9')) || 1;
-        let cost = Number(localStorage.getItem('ct_v9')) || 50;
+        let score = Number(localStorage.getItem('sc_v10')) || 0;
+        let pwr = Number(localStorage.getItem('pw_v10')) || 1;
+        let cost = Number(localStorage.getItem('ct_v10')) || 50;
 
         function refresh() {
-            document.getElementById('score').innerText = Math.floor(score);
+            document.getElementById('score').innerText = Math.floor(score).toLocaleString();
             document.getElementById('upd-btn').innerText = `Up (+1) • ${cost}`;
             document.getElementById('upd-btn').style.opacity = score < cost ? "0.5" : "1";
             
-            localStorage.setItem('sc_v9', score);
-            localStorage.setItem('pw_v9', pwr);
-            localStorage.setItem('ct_v9', cost);
+            localStorage.setItem('sc_v10', score);
+            localStorage.setItem('pw_v10', pwr);
+            localStorage.setItem('ct_v10', cost);
             
-            db.ref('users/' + userId).set({
-                name: userNick,
-                score: Math.floor(score)
-            });
+            db.ref('users/' + userId).set({ name: userNick, score: Math.floor(score) });
         }
 
         document.getElementById('coin').onclick = () => {
             score += pwr;
-            if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
+            if(tg && tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
             refresh();
         };
 
@@ -116,14 +108,14 @@
             if(score >= cost) {
                 score -= cost;
                 pwr += 1;
-                cost = Math.round(cost * 1.6);
+                cost = Math.round(cost * 1.5);
                 refresh();
             }
         };
 
         document.getElementById('top-btn').onclick = () => {
             const list = document.getElementById('top-list');
-            list.innerHTML = "<div class='row'>Загрузка...</div>";
+            list.innerHTML = "<div class='row'>...</div>";
             document.getElementById('top-modal').style.display = 'flex';
 
             db.ref('users').orderByChild('score').limitToLast(20).once('value', (snapshot) => {
@@ -132,11 +124,7 @@
                 snapshot.forEach(child => { players.push(child.val()); });
                 players.reverse().forEach((p, i) => {
                     const isMe = p.name === userNick ? "row me" : "row";
-                    list.innerHTML += `
-                        <div class="${isMe}">
-                            <span>${i+1}. ${p.name}</span>
-                            <b>${p.score.toLocaleString()}</b>
-                        </div>`;
+                    list.innerHTML += `<div class="${isMe}"><span>${i+1}. ${p.name}</span><b>${p.score.toLocaleString()}</b></div>`;
                 });
             });
         };
