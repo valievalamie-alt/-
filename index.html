@@ -6,16 +6,10 @@
     <title>Rocket Tap Pro</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root {
-            --bg-color: #0d0d0d;
-            --main-color: #ff9f00;
-            --accent-color: #3498db;
-            --card-bg: #1a1a1a;
-        }
         body {
-            background-color: var(--bg-color);
+            background-color: #0d0d0d;
             color: white;
-            font-family: 'Segoe UI', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
             height: 100vh;
             display: flex;
@@ -23,161 +17,167 @@
             justify-content: space-between;
             align-items: center;
             overflow: hidden;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
-        /* Шапка с именем */
-        #user-info {
-            margin-top: 15px;
-            font-size: 14px;
-            color: #888;
-        }
-        #score { font-size: 3rem; font-weight: bold; color: var(--main-color); margin: 5px 0; }
+        #header { margin-top: 20px; text-align: center; }
+        #username { color: #888; font-size: 14px; margin-bottom: 5px; }
+        #score { font-size: 3.2rem; font-weight: bold; color: #ff9f00; margin: 0; }
         
-        /* Уменьшенная монета */
-        #coin-section { flex-grow: 1; display: flex; align-items: center; justify-content: center; }
+        #coin-section { flex-grow: 1; display: flex; align-items: center; justify-content: center; width: 100%; }
         #coin {
-            width: 170px; height: 170px; /* Уменьшено с 220px */
-            background: linear-gradient(145deg, #ffb300, #ff8c00);
+            width: 160px; height: 160px; 
+            background: radial-gradient(circle, #ffb300, #ff8c00);
             border-radius: 50%; display: flex; align-items: center;
             justify-content: center; font-size: 70px;
-            box-shadow: 0 0 40px rgba(255, 165, 0, 0.3);
-            cursor: pointer; transition: transform 0.1s;
-            border: 6px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 0 30px rgba(255, 165, 0, 0.3);
+            cursor: pointer; transition: transform 0.05s;
+            border: 5px solid rgba(255, 255, 255, 0.1);
         }
         #coin:active { transform: scale(0.92); }
 
-        /* Кнопки управления */
         #controls {
-            width: 100%;
-            padding: 15px;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            background: var(--card-bg);
-            border-radius: 20px 20px 0 0;
-        }
-        .btn {
-            padding: 12px; border: none; border-radius: 12px;
-            font-weight: bold; font-size: 14px; cursor: pointer;
-        }
-        #upgrade-btn { background: var(--accent-color); color: white; }
-        #leaderboard-btn { background: #444; color: white; }
-        .btn:disabled { opacity: 0.4; }
-
-        /* Окно лидерборда */
-        #overlay {
-            display: none; position: fixed; top: 0; left: 0;
-            width: 100%; height: 100%; background: rgba(0,0,0,0.9);
-            z-index: 100; flex-direction: column; align-items: center; padding: 20px;
+            width: 100%; padding: 20px;
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 12px; background: #1a1a1a;
+            border-radius: 24px 24px 0 0;
             box-sizing: border-box;
         }
+        .btn {
+            padding: 15px; border: none; border-radius: 14px;
+            font-weight: bold; font-size: 14px; cursor: pointer; color: white;
+        }
+        #upgrade-btn { background: #3498db; }
+        #leaderboard-btn { background: #444; }
+        .btn:disabled { opacity: 0.3; cursor: default; }
+
+        /* Лидерборд */
+        #overlay {
+            display: none; position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%; background: rgba(0,0,0,0.95);
+            z-index: 1000; flex-direction: column; align-items: center; padding: 20px; box-sizing: border-box;
+        }
         #leaderboard-card {
-            background: var(--card-bg); width: 100%; max-width: 350px;
-            border-radius: 20px; padding: 20px; box-sizing: border-box;
+            background: #222; width: 100%; max-width: 400px;
+            border-radius: 20px; padding: 15px; box-sizing: border-box;
+            margin-top: 20px;
         }
         .leader-item {
             display: flex; justify-content: space-between;
-            padding: 10px 0; border-bottom: 1px solid #333;
+            padding: 12px 10px; border-bottom: 1px solid #333;
         }
-        .leader-item.me { color: var(--main-color); font-weight: bold; }
-        #close-btn { margin-top: 20px; background: #ff4444; color: white; border: none; padding: 10px 20px; border-radius: 10px; }
+        .leader-item.me { color: #ff9f00; background: rgba(255,159,0,0.1); border-radius: 8px; }
+        #close-btn { margin-top: auto; width: 100%; max-width: 200px; background: #ff4444; padding: 15px; border-radius: 12px; border: none; color: white; font-weight: bold; }
 
-        .tap-effect { position: absolute; color: white; font-weight: bold; pointer-events: none; animation: moveUp 0.8s forwards; }
-        @keyframes moveUp { to { opacity: 0; transform: translateY(-80px); } }
+        .tap-effect { position: absolute; color: white; font-weight: bold; font-size: 26px; pointer-events: none; animation: moveUp 0.8s forwards; z-index: 50; }
+        @keyframes moveUp { to { opacity: 0; transform: translateY(-100px); } }
     </style>
 </head>
 <body>
 
-    <div id="user-info">Пилот: <span id="username">Player</span></div>
-    <div id="score">0</div>
+    <div id="header">
+        <div id="username">Загрузка...</div>
+        <div id="score">0</div>
+    </div>
     
     <div id="coin-section">
         <div id="coin">🚀</div>
     </div>
 
     <div id="controls">
-        <button id="upgrade-btn" class="btn">Улучшить (50)</button>
-        <button id="leaderboard-btn" class="btn">🏆 Лидеры</button>
+        <button id="upgrade-btn" class="btn">Апгрейд (50)</button>
+        <button id="leaderboard-btn" class="btn">🏆 Топ-10</button>
     </div>
 
     <div id="overlay">
-        <h2>Топ-10 Пилотов</h2>
-        <div id="leaderboard-card">
-            </div>
-        <button id="close-btn">Закрыть</button>
+        <h2 style="margin-top:40px">Рейтинг Пилотов</h2>
+        <div id="leaderboard-card"></div>
+        <button id="close-btn">Назад в полет</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
+        tg.ready();
         tg.expand();
 
-        // Данные пользователя из Telegram
-        const user = tg.initDataUnsafe?.user;
-        const username = user ? (user.username || user.first_name) : "Аноним";
-        document.getElementById('username').innerText = username;
+        // 1. Получаем имя пользователя правильно
+        let myName = "Игрок";
+        if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+            myName = tg.initDataUnsafe.user.first_name || tg.initDataUnsafe.user.username || "Пилот";
+        }
+        document.getElementById('username').innerText = "Пилот: " + myName;
 
-        let score = Number(localStorage.getItem('score')) || 0;
-        let pwr = Number(localStorage.getItem('pwr')) || 1;
-        let cost = Number(localStorage.getItem('cost')) || 50;
+        // 2. Данные
+        let score = Number(localStorage.getItem('score_v2')) || 0;
+        let pwr = Number(localStorage.getItem('pwr_v2')) || 1;
+        let cost = Number(localStorage.getItem('cost_v2')) || 50;
 
-        function update() {
-            document.getElementById('score').innerText = Math.floor(score);
-            document.getElementById('upgrade-btn').innerText = `Прокачка (+1) - ${cost}`;
-            document.getElementById('upgrade-btn').disabled = score < cost;
-            localStorage.setItem('score', score);
-            localStorage.setItem('pwr', pwr);
-            localStorage.setItem('cost', cost);
+        const scoreEl = document.getElementById('score');
+        const upgradeBtn = document.getElementById('upgrade-btn');
+        const coin = document.getElementById('coin');
+
+        function updateUI() {
+            scoreEl.innerText = Math.floor(score);
+            upgradeBtn.innerText = `Прокачка (+1) • ${cost}`;
+            upgradeBtn.disabled = score < cost;
+            localStorage.setItem('score_v2', score);
+            localStorage.setItem('pwr_v2', pwr);
+            localStorage.setItem('cost_v2', cost);
         }
 
-        document.getElementById('coin').onclick = (e) => {
+        // Клик с поддержкой тач-событий
+        function handleTap(e) {
             score += pwr;
             if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
-            const effect = document.createElement('div');
-            effect.className = 'tap-effect';
-            effect.innerText = '+' + pwr;
-            effect.style.left = e.clientX + 'px';
-            effect.style.top = e.clientY + 'px';
-            document.body.appendChild(effect);
-            setTimeout(() => effect.remove(), 800);
-            update();
-        };
+            
+            // Определяем координаты (мышь или тач)
+            const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            
+            if(clientX && clientY) {
+                const effect = document.createElement('div');
+                effect.className = 'tap-effect';
+                effect.innerText = '+' + pwr;
+                effect.style.left = clientX + 'px';
+                effect.style.top = clientY + 'px';
+                document.body.appendChild(effect);
+                setTimeout(() => effect.remove(), 700);
+            }
+            updateUI();
+        }
 
-        document.getElementById('upgrade-btn').onclick = () => {
+        coin.onclick = handleTap;
+
+        upgradeBtn.onclick = () => {
             if (score >= cost) {
                 score -= cost;
                 pwr += 1;
-                cost = Math.floor(cost * 1.7);
-                update();
+                cost = Math.floor(cost * 1.8);
+                updateUI();
             }
         };
 
         // Лидерборд
-        const leaders = [
-            {n: "CryptoKing", s: 150000},
-            {n: "MarsOne", s: 120000},
-            {n: "ElonFan", s: 95000},
-            {n: "StarWalker", s: 80000},
-            {n: "Tapper_pro", s: 50000},
-            {n: "SkyHigh", s: 30000},
-            {n: "MoonGuy", s: 15000},
-            {n: "ZeroG", s: 5000},
-            {n: "Rocket_bot", s: 1000}
+        const fakeLeaders = [
+            {n: "CryptoLord", s: 250000}, {n: "StarVoyager", s: 180000},
+            {n: "MarsOne", s: 145000}, {n: "TapperGPT", s: 90000},
+            {n: "SkyWalker", s: 65000}, {n: "MoonBase", s: 40000},
+            {n: "SonicTap", s: 20000}, {n: "ZeroG", s: 10000},
+            {n: "Alpha", s: 5000}
         ];
 
         document.getElementById('leaderboard-btn').onclick = () => {
             const card = document.getElementById('leaderboard-card');
             card.innerHTML = "";
+            let fullList = [...fakeLeaders, {n: myName, s: score, me: true}];
+            fullList.sort((a, b) => b.s - a.s);
             
-            // Добавляем текущего игрока в список и сортируем
-            let currentList = [...leaders, {n: username, s: score, me: true}];
-            currentList.sort((a, b) => b.s - a.s);
-            
-            currentList.slice(0, 10).forEach((item, index) => {
-                const div = document.createElement('div');
-                div.className = `leader-item ${item.me ? 'me' : ''}`;
-                div.innerHTML = `<span>${index + 1}. ${item.n}</span> <span>${item.s.toLocaleString()}</span>`;
-                card.appendChild(div);
+            fullList.slice(0, 10).forEach((item, i) => {
+                const row = document.createElement('div');
+                row.className = `leader-item ${item.me ? 'me' : ''}`;
+                row.innerHTML = `<span>${i+1}. ${item.n}</span><span>${item.s.toLocaleString()}</span>`;
+                card.appendChild(row);
             });
-            
             document.getElementById('overlay').style.display = 'flex';
         };
 
@@ -185,7 +185,7 @@
             document.getElementById('overlay').style.display = 'none';
         };
 
-        update();
+        updateUI();
     </script>
 </body>
 </html>
