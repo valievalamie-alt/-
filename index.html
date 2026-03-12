@@ -7,40 +7,49 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        :root { --bg: #000; --orange: #ff9f00; --blue: #007aff; --purple: #8e44ad; --gray: #2c2c2e; }
+        :root { --bg: #000; --orange: #ff9f00; --blue: #007aff; --purple: #8e44ad; --gray: #2c2c2e; --light-gray: #444; }
         body { background: var(--bg); color: white; font-family: -apple-system, sans-serif; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
         #header { padding-top: env(safe-area-inset-top); height: 100px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
-        #score { font-size: 48px; font-weight: 900; color: var(--orange); font-variant-numeric: tabular-nums; }
-        #streak-info { font-size: 12px; color: #888; margin-top: 4px; }
+        #score { font-size: 50px; font-weight: 900; color: var(--orange); font-variant-numeric: tabular-nums; }
+        #streak-info { font-size: 12px; color: #888; margin-top: 5px; }
 
         #game { flex-grow: 1; position: relative; display: flex; align-items: center; justify-content: center; touch-action: manipulation; }
-        #coin { width: 200px; height: 200px; background: radial-gradient(circle, #ffb300, #ff8c00); border-radius: 50%; border: 5px solid #fff; font-size: 80px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 30px rgba(255,159,0,0.3); z-index: 10; transition: transform 0.05s; }
+        #coin { width: 210px; height: 210px; background: radial-gradient(circle, #ffb300, #ff8c00); border-radius: 50%; border: 5px solid #fff; font-size: 80px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 35px rgba(255,159,0,0.3); z-index: 10; transition: transform 0.05s; -webkit-tap-highlight-color: transparent; }
         #coin:active { transform: scale(0.95); }
 
-        .pop-num { position: absolute; font-size: 26px; font-weight: 900; color: #fff; pointer-events: none; z-index: 999; animation: floatUp 0.7s ease-out forwards; }
-        @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-100px); opacity: 0; } }
+        .pop-num { position: absolute; font-size: 28px; font-weight: 900; color: #fff; pointer-events: none; z-index: 999; animation: floatUp 0.7s ease-out forwards; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-120px); opacity: 0; } }
 
-        #menu { background: #1c1c1e; padding: 15px 15px calc(20px + env(safe-area-inset-bottom)); border-radius: 25px 25px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn { height: 50px; border: none; border-radius: 14px; font-weight: bold; color: white; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
-        .btn:active { opacity: 0.7; }
+        /* Сетка меню на 4 кнопки */
+        #menu { background: #1c1c1e; padding: 15px 15px calc(20px + env(safe-area-inset-bottom)); border-radius: 28px 28px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn { height: 55px; border: none; border-radius: 16px; font-weight: bold; color: white; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.1s; -webkit-tap-highlight-color: transparent; }
+        
         #upd-btn { background: var(--blue); }
-        #daily-btn { background: #34c759; }
-        #case-btn { background: var(--purple); grid-column: span 2; height: 60px; font-size: 16px; }
+        #case-btn { background: var(--purple); }
+        
+        /* Кнопка подарка: серая, при нажатии белая */
+        #daily-btn { background: var(--light-gray); color: #fff; }
+        #daily-btn:active { background: #fff; color: #000; }
+        
+        #top-btn { background: var(--gray); color: #bbb; }
 
-        /* РУЛЕТКА В СТИЛЕ CS */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; }
-        #roulette-container { width: 300px; height: 100px; border: 2px solid #444; position: relative; overflow: hidden; background: #111; margin: 20px 0; border-radius: 10px; }
-        #roulette-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: red; z-index: 5; transform: translateX(-50%); }
-        #roulette-track { display: flex; position: absolute; left: 0; top: 0; height: 100%; transition: transform 4s cubic-bezier(0.1, 0, 0.1, 1); }
-        .item { min-width: 80px; height: 100px; display: flex; flex-direction: column; align-items: center; justify-content: center; border-right: 1px solid #222; font-weight: bold; font-size: 14px; }
+        /* Рулетка */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 10000; flex-direction: column; align-items: center; justify-content: center; }
+        #roulette-container { width: 300px; height: 100px; border: 2px solid #333; position: relative; overflow: hidden; background: #111; margin: 20px 0; border-radius: 12px; }
+        #roulette-line { position: absolute; left: 50%; top: 0; bottom: 0; width: 3px; background: #ff3b30; z-index: 5; transform: translateX(-50%); box-shadow: 0 0 10px rgba(255,0,0,0.5); }
+        #roulette-track { display: flex; position: absolute; left: 0; top: 0; height: 100%; }
+        .item { min-width: 90px; height: 100px; display: flex; align-items: center; justify-content: center; border-right: 1px solid #222; font-weight: 900; font-size: 18px; }
+
+        #top-list { width: 90%; background: #1c1c1e; border-radius: 20px; max-height: 50vh; overflow-y: auto; margin: 15px 0; }
+        .row { display: flex; justify-content: space-between; padding: 12px 18px; border-bottom: 1px solid #2c2c2e; font-size: 13px; }
     </style>
 </head>
 <body>
 
     <div id="header">
         <div id="score">0</div>
-        <div id="streak-info">Загрузка...</div>
+        <div id="streak-info">Загрузка данных...</div>
     </div>
 
     <div id="game">
@@ -48,18 +57,25 @@
     </div>
 
     <div id="menu">
-        <button id="upd-btn" class="btn">Улучшить (+1)</button>
+        <button id="upd-btn" class="btn">Улучшить</button>
+        <button id="case-btn" class="btn">Кейс 350</button>
         <button id="daily-btn" class="btn">🎁 Подарок</button>
-        <button id="case-btn" class="btn">📦 ОТКРЫТЬ КЕЙС (350)</button>
+        <button id="top-btn" class="btn">Лидерборд</button>
     </div>
 
     <div id="case-modal" class="modal">
-        <h2 id="case-status">Открытие кейса...</h2>
+        <h2 id="case-status" style="margin-bottom:10px;">Открытие...</h2>
         <div id="roulette-container">
             <div id="roulette-line"></div>
             <div id="roulette-track"></div>
         </div>
-        <button id="close-case" class="btn" style="background:#444; width:150px; display:none;">Закрыть</button>
+        <button id="close-case" class="btn" style="background:#444; width:140px; display:none;">ОК</button>
+    </div>
+
+    <div id="top-modal" class="modal">
+        <h2>Топ Пилотов</h2>
+        <div id="top-list"></div>
+        <button onclick="document.getElementById('top-modal').style.display='none'" class="btn" style="background:#444; width:120px;">Назад</button>
     </div>
 
     <script>
@@ -78,127 +94,122 @@
         tg.expand();
 
         const userId = tg.initDataUnsafe?.user?.id || "guest";
-        let score = Number(localStorage.getItem('sc_v20')) || 0;
-        let pwr = Number(localStorage.getItem('pw_v20')) || 1;
-        let cost = Number(localStorage.getItem('ct_v20')) || 50;
-        let streak = Number(localStorage.getItem('str_v20')) || 0;
-        let lastDate = localStorage.getItem('ld_v20') || "";
+        let score = Number(localStorage.getItem('sc_v21')) || 0;
+        let pwr = Number(localStorage.getItem('pw_v21')) || 1;
+        let cost = Number(localStorage.getItem('ct_v21')) || 50;
+        let streak = Number(localStorage.getItem('str_v21')) || 0;
+        let lastDate = localStorage.getItem('ld_v21') || "";
 
         function refresh() {
             document.getElementById('score').innerText = Math.floor(score).toLocaleString();
-            document.getElementById('upd-btn').innerText = `Up (+1) • ${cost}`;
-            document.getElementById('streak-info').innerText = `Серия заходов: ${streak} дн.`;
-            localStorage.setItem('sc_v20', score);
-            localStorage.setItem('pw_v20', pwr);
-            localStorage.setItem('ct_v20', cost);
-            localStorage.setItem('str_v20', streak);
-            localStorage.setItem('ld_v20', lastDate);
+            document.getElementById('upd-btn').innerText = `Up +1 (${cost})`;
+            document.getElementById('streak-info').innerText = `Серия подарков: ${streak} дн.`;
+            localStorage.setItem('sc_v21', score);
+            localStorage.setItem('pw_v21', pwr);
+            localStorage.setItem('ct_v21', cost);
+            localStorage.setItem('str_v21', streak);
+            localStorage.setItem('ld_v21', lastDate);
             db.ref('users/' + userId).set({ name: tg.initDataUnsafe?.user?.first_name || "Пилот", score: Math.floor(score) });
         }
 
-        // Клик
+        // Клик с числами из пальца
         document.getElementById('game').onclick = (e) => {
             score += pwr;
             const pop = document.createElement('div');
             pop.className = 'pop-num';
             pop.innerText = `+${pwr}`;
             pop.style.left = e.clientX + 'px';
-            pop.style.top = e.clientY + 'px';
+            pop.style.top = (e.clientY - 20) + 'px';
             document.body.appendChild(pop);
             setTimeout(() => pop.remove(), 700);
             if(tg.HapticFeedback) tg.HapticFeedback.impactOccurred('medium');
             refresh();
         };
 
-        // Апгрейд
+        // Кнопки
         document.getElementById('upd-btn').onclick = (e) => {
             e.stopPropagation();
-            if(score >= cost) {
-                score -= cost; pwr++; cost = Math.round(cost * 1.6); refresh();
-            }
+            if(score >= cost) { score -= cost; pwr++; cost = Math.round(cost * 1.6); refresh(); }
         };
 
-        // ЕЖЕДНЕВНЫЙ ПОДАРОК
         document.getElementById('daily-btn').onclick = (e) => {
             e.stopPropagation();
             const today = new Date().toLocaleDateString();
-            if (lastDate === today) {
-                tg.showAlert("Ты уже забирал подарок сегодня!");
-                return;
-            }
+            if (lastDate === today) { tg.showAlert("Сегодня подарок уже взят!"); return; }
             
-            // Логика стрика
             const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
-            if (lastDate === yesterday.toLocaleDateString()) {
-                streak++;
-            } else {
-                streak = 1;
-            }
+            if (lastDate === yesterday.toLocaleDateString()) streak++; else streak = 1;
 
-            const reward = streak * 250; // С каждым днем на 250 больше
+            const reward = streak * 300; 
             score += reward;
             lastDate = today;
             refresh();
-            tg.showPopup({ title: '🎁 Подарок!', message: `Твой бонус за ${streak}-й день: ${reward} тапов!`, buttons: [{type: 'ok'}] });
+            tg.showPopup({ title: '🎁 Подарок!', message: `Твой бонус за ${streak} день: ${reward} тапов!`, buttons: [{type: 'ok'}] });
         };
 
-        // РУЛЕТКА КЕЙСОВ
+        // Рулетка
         const items = [
-            {v: 50, c: '#888', p: 50},  {v: 100, c: '#888', p: 30},
-            {v: 250, c: '#007aff', p: 15}, {v: 1000, c: '#8e44ad', p: 4},
-            {v: 5000, c: '#ff9f00', p: 1} // Самый редкий
+            {v: 70, c: '#444', p: 60}, {v: 150, c: '#555', p: 25},
+            {v: 500, c: '#007aff', p: 10}, {v: 2000, c: '#8e44ad', p: 4},
+            {v: 10000, c: '#ff9f00', p: 1}
         ];
 
         document.getElementById('case-btn').onclick = (e) => {
             e.stopPropagation();
             if(score < 350) { tg.showAlert("Нужно 350 тапов!"); return; }
-            score -= 350;
-            refresh();
+            score -= 350; refresh();
 
             const track = document.getElementById('roulette-track');
             const modal = document.getElementById('case-modal');
             const closeBtn = document.getElementById('close-case');
-            const status = document.getElementById('case-status');
-            
             modal.style.display = 'flex';
             closeBtn.style.display = 'none';
-            status.innerText = "Крутим...";
             track.style.transition = 'none';
             track.style.transform = 'translateX(0)';
 
-            // Генерируем ленту (30 элементов)
             track.innerHTML = '';
             let pool = [];
-            for(let i=0; i<40; i++) {
+            for(let i=0; i<45; i++) {
                 const rand = Math.random() * 100;
-                let accum = 0;
-                let selected = items[0];
-                for(let it of items) {
-                    accum += it.p;
-                    if(rand <= accum) { selected = it; break; }
-                }
+                let accum = 0; let selected = items[0];
+                for(let it of items) { accum += it.p; if(rand <= accum) { selected = it; break; } }
                 pool.push(selected);
-                track.innerHTML += `<div class="item" style="background:${selected.c}">${selected.v}</div>`;
+                track.innerHTML += `<div class="item" style="color:${selected.c}">${selected.v}</div>`;
             }
 
-            // Запуск анимации
             setTimeout(() => {
                 track.style.transition = 'transform 4s cubic-bezier(0.1, 0, 0.1, 1)';
-                const stopPos = (35 * 80) - 150 + Math.random()*50;
+                const stopPos = (40 * 90) - 105 + Math.random()*20;
                 track.style.transform = `translateX(-${stopPos}px)`;
             }, 50);
 
             setTimeout(() => {
-                const finalItem = pool[35];
-                score += finalItem.v;
-                status.innerText = `Выпало: ${finalItem.v}!`;
+                const win = pool[40].v;
+                score += win;
+                document.getElementById('case-status').innerText = `Выпало: ${win}!`;
                 closeBtn.style.display = 'block';
                 refresh();
-            }, 4100);
+            }, 4200);
         };
 
         document.getElementById('close-case').onclick = () => {
             document.getElementById('case-modal').style.display = 'none';
+            document.getElementById('case-status').innerText = "Открытие...";
+        };
+
+        document.getElementById('top-btn').onclick = (e) => {
+            e.stopPropagation();
+            const list = document.getElementById('top-list');
+            list.innerHTML = "<div class='row'>Загрузка...</div>";
+            document.getElementById('top-modal').style.display = 'flex';
+            db.ref('users').orderByChild('score').limitToLast(15).once('value', (snap) => {
+                list.innerHTML = "";
+                let players = [];
+                snap.forEach(c => { players.push(c.val()); });
+                players.reverse().forEach((p, i) => {
+                    list.innerHTML += `<div class="row"><span>${i+1}. ${p.name}</span><b>${p.score.toLocaleString()}</b></div>`;
+                });
+            });
         };
 
         refresh();
