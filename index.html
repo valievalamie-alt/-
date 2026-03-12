@@ -6,115 +6,102 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         :root {
-            --tg-theme-bg-color: #000000;
+            --bg-color: #0d0d0d;
             --main-orange: #ff9f00;
             --blue-btn: #007aff;
             --purple-btn: #8e44ad;
         }
         body {
-            background-color: var(--tg-theme-bg-color);
+            background-color: var(--bg-color);
             color: white;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, sans-serif;
             margin: 0; padding: 0;
             display: flex; flex-direction: column; align-items: center;
             height: 100vh; overflow: hidden; user-select: none;
         }
-        #header { margin-top: 40px; text-align: center; }
-        #score { font-size: 64px; font-weight: bold; color: var(--main-orange); margin: 0; }
+        #header { margin-top: 30px; text-align: center; }
+        #score { font-size: 60px; font-weight: bold; color: var(--main-orange); margin: 0; }
         
         #game-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; width: 100%; }
+        /* Кнопка-ракета */
         #coin {
-            width: 220px; height: 220px; background: var(--main-orange);
+            width: 200px; height: 200px; 
+            background: radial-gradient(circle, #ffb300, #ff8c00);
             border-radius: 50%; border: 6px solid white;
             display: flex; align-items: center; justify-content: center;
             box-shadow: 0 0 40px rgba(255, 159, 0, 0.4);
             transition: transform 0.05s; cursor: pointer;
+            font-size: 100px; /* Размер эмодзи ракеты */
         }
-        #coin img { width: 140px; pointer-events: none; }
         #coin:active { transform: scale(0.92); }
 
         #controls {
             width: 100%; padding: 20px; box-sizing: border-box;
-            background: rgba(20, 20, 20, 0.8); border-radius: 30px 30px 0 0;
-            display: flex; flex-direction: column; gap: 12px;
+            background: #1a1a1a; border-radius: 30px 30px 0 0;
+            display: flex; flex-direction: column; gap: 10px;
+            margin-bottom: 10px;
         }
         .btn {
             width: 100%; height: 60px; border: none; border-radius: 16px;
             font-size: 20px; font-weight: bold; color: white; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
-            -webkit-appearance: none;
         }
         #upd-btn { background: var(--blue-btn); }
         #case-btn { background: var(--purple-btn); }
-        .btn:disabled { background: #333; color: #777; }
+        .btn:disabled { opacity: 0.3; }
 
-        /* ОКНО КЕЙСА (CS STYLE) */
+        /* Окно кейса */
         #case-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); z-index: 100; flex-direction: column;
+            background: rgba(0,0,0,0.98); z-index: 100; flex-direction: column;
             align-items: center; justify-content: center;
         }
         #case-container {
             width: 300px; height: 100px; border: 2px solid #444; overflow: hidden;
-            position: relative; background: #111; border-radius: 10px;
+            position: relative; background: #111; border-radius: 15px;
         }
-        #case-line {
-            position: absolute; left: 50%; top: 0; width: 2px; height: 100%;
-            background: red; z-index: 10; transform: translateX(-50%);
-        }
-        #case-reel {
-            display: flex; position: absolute; left: 0; top: 0; height: 100%;
-            transition: left 3s cubic-bezier(0.1, 0, 0.1, 1);
-        }
-        .case-item {
-            min-width: 100px; height: 100%; display: flex;
-            align-items: center; justify-content: center; font-size: 40px;
-            border-right: 1px solid #222;
-        }
-        #win-msg { margin-top: 20px; font-size: 22px; font-weight: bold; color: var(--main-orange); }
+        #case-line { position: absolute; left: 50%; top: 0; width: 3px; height: 100%; background: #ff4444; z-index: 10; transform: translateX(-50%); }
+        #case-reel { display: flex; position: absolute; left: 0; top: 0; height: 100%; transition: left 3s cubic-bezier(0.1, 0, 0.1, 1); }
+        .case-item { min-width: 100px; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 40px; border-right: 1px solid #222; }
 
-        .tap-anim {
-            position: absolute; color: white; font-size: 30px; font-weight: bold;
-            pointer-events: none; animation: flyUp 0.6s forwards;
-        }
-        @keyframes flyUp { to { transform: translateY(-100px); opacity: 0; } }
+        .tap-anim { position: absolute; color: white; font-size: 32px; font-weight: bold; pointer-events: none; animation: flyUp 0.6s forwards; }
+        @keyframes flyUp { to { transform: translateY(-120px); opacity: 0; } }
     </style>
 </head>
 <body>
 
     <div id="header">
         <div id="score">0</div>
-        <div style="font-size:14px; color:#666">Сила: <span id="pwr-val">1</span></div>
+        <div style="font-size:16px; color:#aaa; margin-top:5px">Сила: <span id="pwr-val">1</span></div>
     </div>
 
     <div id="game-area">
-        <div id="coin">
-            <img src="https://raw.githubusercontent.com/TarikCo/TestRocket/main/rocket.png" alt="🚀">
-        </div>
+        <div id="coin">🚀</div>
     </div>
 
     <div id="controls">
-        <button id="upd-btn" class="btn">Upgrade +1 (Cost: 50)</button>
+        <button id="upd-btn" class="btn">Upgrade (Cost: 50)</button>
         <button id="case-btn" class="btn">🎁 Open Case (200)</button>
     </div>
 
     <div id="case-modal">
-        <h2 id="case-status">Распаковка...</h2>
+        <h2 id="case-status">Открываем...</h2>
         <div id="case-container">
             <div id="case-line"></div>
-            <div id="case-reel" style="left: 0;"></div>
+            <div id="case-reel"></div>
         </div>
-        <div id="win-msg"></div>
-        <button onclick="closeCase()" id="close-case" class="btn" style="background:#444; width:200px; margin-top:30px; display:none">Назад</button>
+        <div id="win-msg" style="margin-top:20px; font-size:22px; font-weight:bold; color:orange"></div>
+        <button onclick="closeCase()" id="close-case" class="btn" style="background:#444; width:180px; margin-top:20px; display:none">Закрыть</button>
     </div>
 
     <script>
         const tg = window.Telegram.WebApp;
         tg.expand();
+        tg.ready();
 
-        let score = Number(localStorage.getItem('tap_sc')) || 0;
-        let pwr = Number(localStorage.getItem('tap_pw')) || 1;
-        let cost = Number(localStorage.getItem('tap_ct')) || 50;
+        let score = Number(localStorage.getItem('tap_sc_v5')) || 0;
+        let pwr = Number(localStorage.getItem('tap_pw_v5')) || 1;
+        let cost = Number(localStorage.getItem('tap_ct_v5')) || 50;
 
         function updateUI() {
             document.getElementById('score').innerText = Math.floor(score);
@@ -123,9 +110,9 @@
             document.getElementById('upd-btn').disabled = score < cost;
             document.getElementById('case-btn').disabled = score < 200;
             
-            localStorage.setItem('tap_sc', score);
-            localStorage.setItem('tap_pw', pwr);
-            localStorage.setItem('tap_ct', cost);
+            localStorage.setItem('tap_sc_v5', score);
+            localStorage.setItem('tap_pw_v5', pwr);
+            localStorage.setItem('tap_ct_v5', cost);
         }
 
         document.getElementById('coin').onclick = (e) => {
@@ -152,9 +139,7 @@
             }
         };
 
-        // ЛОГИКА КЕЙСА (CS STYLE)
-        const items = ['🚀', '💰', '💎', '⭐', '🔥', '🔋', '🎁', '🚀', '💰'];
-        
+        const loot = ['🚀', '💰', '💎', '⭐', '🔥', '🔋', '🎁'];
         document.getElementById('case-btn').onclick = () => {
             if(score < 200) return;
             score -= 200;
@@ -171,43 +156,30 @@
             reel.style.transition = 'none';
             reel.style.left = '0px';
 
-            // Генерируем ленту
             reel.innerHTML = '';
-            for(let i=0; i<30; i++) {
+            for(let i=0; i<40; i++) {
                 let div = document.createElement('div');
                 div.className = 'case-item';
-                div.innerText = items[Math.floor(Math.random()*items.length)];
+                div.innerText = loot[Math.floor(Math.random()*loot.length)];
                 reel.appendChild(div);
             }
 
-            // Запуск прокрутки
             setTimeout(() => {
                 reel.style.transition = 'left 3s cubic-bezier(0.1, 0, 0.1, 1)';
-                const stopPos = -(22 * 100) + Math.floor(Math.random()*50);
-                reel.style.left = stopPos + 'px';
+                reel.style.left = '-3000px';
             }, 50);
 
             setTimeout(() => {
-                const winChance = Math.random();
-                if(winChance > 0.9) {
-                    pwr += 10;
-                    winMsg.innerText = "JACKPOT! +10 к силе!";
-                } else if(winChance > 0.5) {
-                    score += 1000;
-                    winMsg.innerText = "КРУТО! +1000 очков!";
-                } else {
-                    pwr += 2;
-                    winMsg.innerText = "Норм! +2 к силе";
-                }
+                const prize = Math.random();
+                if(prize > 0.9) { pwr += 15; winMsg.innerText = "JACKPOT! +15 к силе!"; }
+                else if(prize > 0.6) { score += 1500; winMsg.innerText = "УДАЧА! +1500 монет!"; }
+                else { pwr += 3; winMsg.innerText = "ПРИЗ! +3 к силе"; }
                 closeBtn.style.display = 'flex';
                 updateUI();
             }, 3200);
         };
 
-        function closeCase() {
-            document.getElementById('case-modal').style.display = 'none';
-        }
-
+        function closeCase() { document.getElementById('case-modal').style.display = 'none'; }
         updateUI();
     </script>
 </body>
