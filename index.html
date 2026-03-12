@@ -10,37 +10,38 @@
         :root { --bg: #000; --orange: #ff9f00; --blue: #007aff; --pulp: #8e44ad; }
         body { background: var(--bg); color: white; font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        #header { padding: 30px 20px 10px; text-align: center; }
-        #score { font-size: 48px; font-weight: bold; color: var(--orange); margin: 0; }
-        #nick { font-size: 13px; color: #888; margin-top: 5px; }
+        #header { padding: 25px 20px 5px; text-align: center; }
+        #score { font-size: 44px; font-weight: bold; color: var(--orange); margin: 0; }
+        #nick { font-size: 12px; color: #888; margin-top: 4px; }
 
         #game { flex-grow: 1; display: flex; align-items: center; justify-content: center; }
-        #coin { width: 200px; height: 200px; background: radial-gradient(circle, #ffb300, #ff8c00); border-radius: 50%; border: 5px solid #fff; font-size: 80px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 30px rgba(255,159,0,0.4); cursor: pointer; transition: transform 0.05s; -webkit-tap-highlight-color: transparent; }
+        #coin { width: 190px; height: 190px; background: radial-gradient(circle, #ffb300, #ff8c00); border-radius: 50%; border: 4px solid #fff; font-size: 75px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 25px rgba(255,159,0,0.4); cursor: pointer; transition: transform 0.05s; -webkit-tap-highlight-color: transparent; }
         #coin:active { transform: scale(0.95); }
 
-        #menu { background: #1c1c1e; padding: 15px; border-radius: 25px 25px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-bottom: 40px; }
-        .btn { height: 55px; border: none; border-radius: 16px; font-weight: bold; color: white; font-size: 15px; cursor: pointer; }
+        #menu { background: #1c1c1e; padding: 12px; border-radius: 25px 25px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-bottom: 35px; }
+        .btn { height: 52px; border: none; border-radius: 15px; font-weight: bold; color: white; font-size: 14px; cursor: pointer; }
         #upd-btn { background: var(--blue); }
         #case-btn { background: var(--pulp); }
         #top-btn { background: #3a3a3c; grid-column: span 2; }
 
-        /* СТИЛЬНЫЙ ЛИДЕРБОРД (СРЕДНИЙ РАЗМЕР) */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 100; flex-direction: column; align-items: center; justify-content: center; }
-        #top-list { width: 88%; background: #1c1c1e; border-radius: 20px; margin: 15px 0; max-height: 60vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        /* ЛИДЕРБОРД 12px */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); z-index: 100; flex-direction: column; align-items: center; justify-content: center; }
+        #top-list { width: 88%; background: #1c1c1e; border-radius: 18px; margin: 12px 0; max-height: 60vh; overflow-y: auto; }
         
         .row { 
             display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 18px; 
+            padding: 8px 16px; /* Более узкие строки */
             border-bottom: 1px solid #2c2c2e; 
-            font-size: 14px; /* Оптимальный размер */
+            font-size: 12px; /* Твой размер */
+            color: #efefef;
         }
         .row:last-child { border-bottom: none; }
-        .row span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%; color: #fff; }
-        .row b { color: var(--orange); font-size: 15px; }
-        .row.me { background: rgba(0, 122, 255, 0.15); border-left: 4px solid var(--blue); }
+        .row span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 65%; }
+        .row b { color: var(--orange); font-size: 12px; font-family: monospace; }
+        .row.me { background: rgba(0, 122, 255, 0.12); font-weight: bold; }
         
-        h2 { font-size: 24px; margin: 0; color: #fff; font-weight: 800; }
-        .close-btn { background: #333; width: 140px; margin-top: 15px; height: 45px; }
+        h2 { font-size: 20px; margin: 0; color: #fff; }
+        .close-btn { background: #444; width: 120px; margin-top: 10px; height: 40px; font-size: 13px; }
     </style>
 </head>
 <body>
@@ -63,7 +64,7 @@
     <div id="top-modal" class="modal">
         <h2>Топ Игроков</h2>
         <div id="top-list"></div>
-        <button onclick="document.getElementById('top-modal').style.display='none'" class="btn close-btn">Закрыть</button>
+        <button onclick="document.getElementById('top-modal').style.display='none'" class="btn close-btn">Назад</button>
     </div>
 
     <script>
@@ -86,19 +87,19 @@
         const userNick = (tg?.initDataUnsafe?.user?.first_name) || "Пилот";
         document.getElementById('nick').innerText = "Пилот: " + userNick;
 
-        // Обновленная версия для сброса кэша
-        let score = Number(localStorage.getItem('sc_v11')) || 0;
-        let pwr = Number(localStorage.getItem('pw_v11')) || 1;
-        let cost = Number(localStorage.getItem('ct_v11')) || 50;
+        // sc_v12 для сброса кэша на iPhone
+        let score = Number(localStorage.getItem('sc_v12')) || 0;
+        let pwr = Number(localStorage.getItem('pw_v12')) || 1;
+        let cost = Number(localStorage.getItem('ct_v12')) || 50;
 
         function refresh() {
             document.getElementById('score').innerText = Math.floor(score).toLocaleString();
             document.getElementById('upd-btn').innerText = `Up (+1) • ${cost}`;
             document.getElementById('upd-btn').style.opacity = score < cost ? "0.5" : "1";
             
-            localStorage.setItem('sc_v11', score);
-            localStorage.setItem('pw_v11', pwr);
-            localStorage.setItem('ct_v11', cost);
+            localStorage.setItem('sc_v12', score);
+            localStorage.setItem('pw_v12', pwr);
+            localStorage.setItem('ct_v12', cost);
             
             db.ref('users/' + userId).set({ name: userNick, score: Math.floor(score) });
         }
@@ -123,7 +124,7 @@
             list.innerHTML = "<div class='row'>Загрузка...</div>";
             document.getElementById('top-modal').style.display = 'flex';
 
-            db.ref('users').orderByChild('score').limitToLast(15).once('value', (snapshot) => {
+            db.ref('users').orderByChild('score').limitToLast(20).once('value', (snapshot) => {
                 list.innerHTML = "";
                 let players = [];
                 snapshot.forEach(child => { players.push(child.val()); });
