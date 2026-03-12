@@ -9,21 +9,38 @@
     <style>
         :root { --bg: #000; --orange: #ff9f00; --blue: #007aff; --purple: #8e44ad; }
         body { background: var(--bg); color: white; font-family: -apple-system, sans-serif; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; user-select: none; }
-        #header { padding: 30px 20px 10px; text-align: center; }
-        #score { font-size: 60px; font-weight: bold; color: var(--orange); margin: 0; text-shadow: 0 0 20px rgba(255,159,0,0.3); }
-        #nick { font-size: 14px; color: #888; margin-top: 5px; }
+        
+        /* Шапка */
+        #header { padding: 25px 20px 5px; text-align: center; }
+        #score { font-size: 50px; font-weight: bold; color: var(--orange); margin: 0; text-shadow: 0 0 15px rgba(255,159,0,0.3); }
+        #nick { font-size: 13px; color: #888; margin-top: 5px; }
+
+        /* Центр */
         #game { flex-grow: 1; display: flex; align-items: center; justify-content: center; }
-        #coin { width: 220px; height: 220px; background: radial-gradient(circle, #ffb300, #ff8c00); border-radius: 50%; border: 6px solid #fff; font-size: 100px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 50px rgba(255,159,0,0.4); cursor: pointer; transition: transform 0.05s; }
+        #coin { width: 210px; height: 210px; background: radial-gradient(circle, #ffb300, #ff8c00); border-radius: 50%; border: 5px solid #fff; font-size: 90px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 40px rgba(255,159,0,0.4); cursor: pointer; transition: transform 0.05s; }
         #coin:active { transform: scale(0.92); }
-        #menu { background: #1a1a1a; padding: 20px; border-radius: 30px 30px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding-bottom: 40px; }
-        .btn { height: 60px; border: none; border-radius: 18px; font-weight: bold; color: white; font-size: 16px; cursor: pointer; }
+
+        /* Кнопки меню */
+        #menu { background: #1a1a1a; padding: 15px; border-radius: 25px 25px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding-bottom: 35px; }
+        .btn { height: 55px; border: none; border-radius: 15px; font-weight: bold; color: white; font-size: 15px; cursor: pointer; }
         #upd-btn { background: var(--blue); }
         #case-btn { background: var(--purple); }
         #top-btn { background: #333; grid-column: span 2; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 100; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        #top-list { width: 100%; background: #111; border-radius: 20px; margin: 20px 0; max-height: 50vh; overflow-y: auto; }
-        .row { display: flex; justify-content: space-between; padding: 18px; border-bottom: 1px solid #222; font-size: 18px; }
-        .row b { color: var(--orange); }
+
+        /* Модалка Лидерборда (КОМПАКТНАЯ) */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 100; flex-direction: column; align-items: center; justify-content: flex-start; padding-top: 40px; box-sizing: border-box; }
+        #top-list { width: 90%; background: #111; border-radius: 15px; margin: 15px 0; max-height: 60vh; overflow-y: auto; border: 1px solid #222; }
+        
+        .row { 
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 15px; border-bottom: 1px solid #222; font-size: 15px; 
+        }
+        .row span { 
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; 
+            max-width: 60%; color: #eee;
+        }
+        .row b { color: var(--orange); font-family: monospace; font-size: 16px; }
+        .row.me { background: rgba(255,159,0,0.1); }
     </style>
 </head>
 <body>
@@ -40,13 +57,13 @@
     <div id="menu">
         <button id="upd-btn" class="btn">Upgrade • 50</button>
         <button id="case-btn" class="btn">🎁 Case (200)</button>
-        <button id="top-btn" class="btn">🏆 ЛИДЕРБОРД ОНЛАЙН</button>
+        <button id="top-btn" class="btn">🏆 ЛИДЕРБОРД</button>
     </div>
 
     <div id="top-modal" class="modal">
-        <h2 style="font-size: 28px;">Топ Игроков</h2>
+        <h2 style="margin: 0; font-size: 22px;">Топ Игроков</h2>
         <div id="top-list"></div>
-        <button onclick="document.getElementById('top-modal').style.display='none'" class="btn" style="background:#444; width:180px">Закрыть</button>
+        <button onclick="document.getElementById('top-modal').style.display='none'" class="btn" style="background:#444; width:140px; height: 45px;">Назад</button>
     </div>
 
     <script>
@@ -70,20 +87,19 @@
         const userNick = tg.initDataUnsafe?.user?.first_name || "Пилот";
         document.getElementById('nick').innerText = "Пилот: " + userNick;
 
-        let score = Number(localStorage.getItem('sc_v8')) || 0;
-        let pwr = Number(localStorage.getItem('pw_v8')) || 1;
-        let cost = Number(localStorage.getItem('ct_v8')) || 50;
+        let score = Number(localStorage.getItem('sc_v9')) || 0;
+        let pwr = Number(localStorage.getItem('pw_v9')) || 1;
+        let cost = Number(localStorage.getItem('ct_v9')) || 50;
 
         function refresh() {
             document.getElementById('score').innerText = Math.floor(score);
             document.getElementById('upd-btn').innerText = `Up (+1) • ${cost}`;
             document.getElementById('upd-btn').style.opacity = score < cost ? "0.5" : "1";
             
-            localStorage.setItem('sc_v8', score);
-            localStorage.setItem('pw_v8', pwr);
-            localStorage.setItem('ct_v8', cost);
+            localStorage.setItem('sc_v9', score);
+            localStorage.setItem('pw_v9', pwr);
+            localStorage.setItem('ct_v9', cost);
             
-            // Сохраняем в твою базу Realtime Database
             db.ref('users/' + userId).set({
                 name: userNick,
                 score: Math.floor(score)
@@ -105,19 +121,22 @@
             }
         };
 
-        // ЗАГРУЗКА РЕАЛЬНОГО ТОПА ИЗ БАЗЫ
         document.getElementById('top-btn').onclick = () => {
             const list = document.getElementById('top-list');
             list.innerHTML = "<div class='row'>Загрузка...</div>";
             document.getElementById('top-modal').style.display = 'flex';
 
-            db.ref('users').orderByChild('score').limitToLast(10).once('value', (snapshot) => {
+            db.ref('users').orderByChild('score').limitToLast(20).once('value', (snapshot) => {
                 list.innerHTML = "";
                 let players = [];
                 snapshot.forEach(child => { players.push(child.val()); });
                 players.reverse().forEach((p, i) => {
-                    const isMe = p.name === userNick ? " (Вы)" : "";
-                    list.innerHTML += `<div class="row"><span>${i+1}. ${p.name}${isMe}</span><b>${p.score}</b></div>`;
+                    const isMe = p.name === userNick ? "row me" : "row";
+                    list.innerHTML += `
+                        <div class="${isMe}">
+                            <span>${i+1}. ${p.name}</span>
+                            <b>${p.score.toLocaleString()}</b>
+                        </div>`;
                 });
             });
         };
