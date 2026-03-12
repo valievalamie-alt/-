@@ -32,19 +32,18 @@
         #settings-btn { background: #3a3a3c; grid-column: span 2; margin-top: 5px; }
 
         .btn.locked { background: var(--disabled) !important; color: #444 !important; }
+        .btn.taken { background: var(--disabled) !important; color: #666 !important; }
 
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 10000; flex-direction: column; align-items: center; justify-content: center; }
         .modal-content { width: 85%; background: #1c1c1e; border-radius: 20px; padding: 25px; box-sizing: border-box; text-align: center; }
         .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #333; }
-        
-        #top-list { width: 100%; max-height: 40vh; overflow-y: auto; margin-top: 10px; }
-        .row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #333; font-size: 14px; }
+        .version-tag { font-size: 10px; color: #555; margin-top: 15px; display: block; }
     </style>
 </head>
 <body>
 
     <audio id="bg-audio" loop preload="auto">
-        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+        <source src="https://www.bensound.com/bensound-music/bensound-slowmotion.mp3" type="audio/mpeg">
     </audio>
 
     <div id="header">
@@ -74,15 +73,8 @@
                 <span>Музыка</span>
                 <button id="toggle-music" class="btn" style="width:80px; height:35px; background:var(--blue);">ВКЛ</button>
             </div>
-            <button onclick="document.getElementById('settings-modal').style.display='none'" class="btn" style="background:#444; width:100%; margin-top:25px;">ЗАКРЫТЬ</button>
-        </div>
-    </div>
-
-    <div id="top-modal" class="modal">
-        <div class="modal-content">
-            <h2>Топ Игроков</h2>
-            <div id="top-list"></div>
-            <button onclick="document.getElementById('top-modal').style.display='none'" class="btn" style="background:#444; width:100%; margin-top:15px;">НАЗАД</button>
+            <span class="version-tag">Версия: 1.1.0 (Stable)</span>
+            <button onclick="document.getElementById('settings-modal').style.display='none'" class="btn" style="background:#444; width:100%; margin-top:20px;">ЗАКРЫТЬ</button>
         </div>
     </div>
 
@@ -102,14 +94,14 @@
         tg.expand();
 
         const userId = tg.initDataUnsafe?.user?.id || "guest";
-        let score = Number(localStorage.getItem('sc_final')) || 0;
-        let pwr = Number(localStorage.getItem('pw_final')) || 1;
-        let cost = Number(localStorage.getItem('ct_final')) || 50;
-        let streak = Number(localStorage.getItem('str_final')) || 0;
-        let lastDate = localStorage.getItem('ld_final') || "";
+        let score = Number(localStorage.getItem('sc_v11')) || 0;
+        let pwr = Number(localStorage.getItem('pw_v11')) || 1;
+        let cost = Number(localStorage.getItem('ct_v11')) || 50;
+        let streak = Number(localStorage.getItem('str_v11')) || 0;
+        let lastDate = localStorage.getItem('ld_v11') || "";
         
         const audio = document.getElementById('bg-audio');
-        let musicOn = false;
+        let isMusicPlaying = false;
         let audioUnlocked = false;
 
         function refresh() {
@@ -121,21 +113,29 @@
             uBtn.innerText = `Улучшить (${cost})`;
             uBtn.className = score < cost ? "btn locked" : "btn";
 
-            localStorage.setItem('sc_final', score);
-            localStorage.setItem('pw_final', pwr);
-            localStorage.setItem('ct_final', cost);
-            localStorage.setItem('str_final', streak);
-            localStorage.setItem('ld_final', lastDate);
+            const gBtn = document.getElementById('daily-btn');
+            const today = new Date().toLocaleDateString();
+            if (lastDate === today) {
+                gBtn.innerText = "Взято ✅";
+                gBtn.className = "btn taken";
+            } else {
+                gBtn.innerText = "🎁 Подарок";
+                gBtn.className = "btn";
+                gBtn.style.background = "#fff";
+            }
+
+            localStorage.setItem('sc_v11', score);
+            localStorage.setItem('pw_v11', pwr);
+            localStorage.setItem('ct_v11', cost);
+            localStorage.setItem('str_v11', streak);
+            localStorage.setItem('ld_v11', lastDate);
             db.ref('users/' + userId).set({ name: tg.initDataUnsafe?.user?.first_name || "Пилот", score: Math.floor(score) });
         }
 
-        // Главный клик
         document.getElementById('game').onclick = (e) => {
-            // Разблокировка звука для iPhone при первом тапе
             if (!audioUnlocked) {
                 audio.play().then(() => { audio.pause(); audioUnlocked = true; }).catch(() => {});
             }
-
             score += pwr;
             const pop = document.createElement('div');
             pop.className = 'pop-num';
@@ -148,39 +148,40 @@
             refresh();
         };
 
-        // Логика кнопки музыки
+        // Исправленный выключатель музыки
         document.getElementById('toggle-music').onclick = function() {
-            if(!musicOn) {
+            if(!isMusicPlaying) {
                 audio.play().then(() => {
                     this.innerText = "ВЫКЛ";
                     this.style.background = "#ff3b30";
-                    musicOn = true;
+                    isMusicPlaying = true;
                 }).catch(() => tg.showAlert("Сначала тапни по ракете!"));
             } else {
                 audio.pause();
                 this.innerText = "ВКЛ";
                 this.style.background = "var(--blue)";
-                musicOn = false;
+                isMusicPlaying = false;
             }
+        };
+
+        document.getElementById('daily-btn').onclick = () => {
+            const today = new Date().toLocaleDateString();
+            if (lastDate === today) return;
+            
+            const yes = new Date(); yes.setDate(yes.getDate() - 1);
+            if (lastDate === yes.toLocaleDateString()) streak++; else streak = 1;
+            
+            const reward = streak * 500;
+            score += reward;
+            lastDate = today;
+            tg.showPopup({ title: 'Подарок!', message: `Вы получили ${reward} тапов!`, buttons: [{type: 'ok'}] });
+            refresh();
         };
 
         document.getElementById('settings-btn').onclick = () => document.getElementById('settings-modal').style.display = 'flex';
         
         document.getElementById('upd-btn').onclick = () => { 
             if(score >= cost) { score -= cost; pwr++; cost = Math.round(cost * 1.7); refresh(); } 
-        };
-
-        document.getElementById('top-btn').onclick = () => {
-            const list = document.getElementById('top-list');
-            list.innerHTML = "Загрузка...";
-            document.getElementById('top-modal').style.display = 'flex';
-            db.ref('users').orderByChild('score').limitToLast(10).once('value', (s) => {
-                list.innerHTML = "";
-                let arr = []; s.forEach(x => arr.push(x.val()));
-                arr.reverse().forEach((p, i) => {
-                    list.innerHTML += `<div class="row"><span>${i+1}. ${p.name}</span><b>${p.score}</b></div>`;
-                });
-            });
         };
 
         refresh();
