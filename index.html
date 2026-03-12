@@ -23,36 +23,34 @@
         @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-120px); opacity: 0; } }
 
         #menu { background: #1c1c1e; padding: 15px 15px calc(20px + env(safe-area-inset-bottom)); border-radius: 28px 28px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn { height: 50px; border: none; border-radius: 14px; font-weight: bold; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: white; -webkit-tap-highlight-color: transparent; }
+        .btn { height: 50px; border: none; border-radius: 14px; font-weight: bold; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; color: white; -webkit-tap-highlight-color: transparent; text-align: center; }
         
-        .btn.locked { background: var(--disabled) !important; color: #444 !important; }
-        .btn.active-gift { background: #fff !important; color: #000 !important; }
-        .btn.taken-gift { background: var(--disabled) !important; color: #444 !important; }
-
         #upd-btn { background: var(--blue); }
         #case-btn { background: var(--purple); }
         #daily-btn { background: #fff; color: #000; }
         #top-btn { background: var(--gray); }
         #settings-btn { background: #3a3a3c; grid-column: span 2; margin-top: 5px; }
 
+        .btn.locked { background: var(--disabled) !important; color: #444 !important; }
+
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 10000; flex-direction: column; align-items: center; justify-content: center; }
         .modal-content { width: 85%; background: #1c1c1e; border-radius: 20px; padding: 25px; box-sizing: border-box; text-align: center; }
         .setting-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #333; }
-
+        
         #top-list { width: 100%; max-height: 40vh; overflow-y: auto; margin-top: 10px; }
         .row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #333; font-size: 14px; }
     </style>
 </head>
 <body>
 
-    <audio id="bg-audio" loop preload="auto" crossorigin="anonymous">
-        <source src="https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Ketsa/Raising_Frequecy/Ketsa_-_08_-_Raising_Frequency.mp3" type="audio/mpeg">
+    <audio id="bg-audio" loop preload="auto">
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
     </audio>
 
     <div id="header">
         <div id="score">0</div>
         <div id="stats-bar">
-            <div class="stat-item">Тап: <b id="pwr-val">+1</b></div>
+            <div class="stat-item">Сила: <b id="pwr-val">+1</b></div>
             <div class="stat-item">Серия: <b id="streak-val">0</b></div>
         </div>
     </div>
@@ -64,7 +62,7 @@
     <div id="menu">
         <button id="upd-btn" class="btn">Улучшить</button>
         <button id="case-btn" class="btn">Кейс 350</button>
-        <button id="daily-btn" class="btn">Подарок</button>
+        <button id="daily-btn" class="btn">🎁 Подарок</button>
         <button id="top-btn" class="btn">Топ</button>
         <button id="settings-btn" class="btn">⚙️ НАСТРОЙКИ</button>
     </div>
@@ -80,8 +78,15 @@
         </div>
     </div>
 
+    <div id="top-modal" class="modal">
+        <div class="modal-content">
+            <h2>Топ Игроков</h2>
+            <div id="top-list"></div>
+            <button onclick="document.getElementById('top-modal').style.display='none'" class="btn" style="background:#444; width:100%; margin-top:15px;">НАЗАД</button>
+        </div>
+    </div>
+
     <script>
-        // ... Конфиг Firebase такой же ...
         const firebaseConfig = {
             apiKey: "AIzaSyAhFyYz8tC0VZqNKQweM1VH7A9rzcLQ7L4",
             authDomain: "rockettap-22e98.firebaseapp.com",
@@ -94,53 +99,41 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const tg = window.Telegram.WebApp;
-        const audio = document.getElementById('bg-audio');
-        let musicOn = false;
+        tg.expand();
 
         const userId = tg.initDataUnsafe?.user?.id || "guest";
-        let score = Number(localStorage.getItem('sc_v40')) || 0;
-        let pwr = Number(localStorage.getItem('pw_v40')) || 1;
-        let cost = Number(localStorage.getItem('ct_v40')) || 50;
-        let streak = Number(localStorage.getItem('str_v40')) || 0;
-        let lastDate = localStorage.getItem('ld_v40') || "";
+        let score = Number(localStorage.getItem('sc_final')) || 0;
+        let pwr = Number(localStorage.getItem('pw_final')) || 1;
+        let cost = Number(localStorage.getItem('ct_final')) || 50;
+        let streak = Number(localStorage.getItem('str_final')) || 0;
+        let lastDate = localStorage.getItem('ld_final') || "";
+        
+        const audio = document.getElementById('bg-audio');
+        let musicOn = false;
+        let audioUnlocked = false;
 
         function refresh() {
             document.getElementById('score').innerText = Math.floor(score).toLocaleString();
             document.getElementById('pwr-val').innerText = "+" + pwr;
             document.getElementById('streak-val').innerText = streak;
-            document.getElementById('upd-btn').className = score < cost ? "btn locked" : "btn";
-            document.getElementById('upd-btn').innerText = `Up (${cost})`;
-            document.getElementById('case-btn').className = score < 350 ? "btn locked" : "btn";
-            localStorage.setItem('sc_v40', score);
-            localStorage.setItem('pw_v40', pwr);
-            localStorage.setItem('ct_v40', cost);
-            localStorage.setItem('str_v40', streak);
-            localStorage.setItem('ld_v40', lastDate);
+
+            const uBtn = document.getElementById('upd-btn');
+            uBtn.innerText = `Улучшить (${cost})`;
+            uBtn.className = score < cost ? "btn locked" : "btn";
+
+            localStorage.setItem('sc_final', score);
+            localStorage.setItem('pw_final', pwr);
+            localStorage.setItem('ct_final', cost);
+            localStorage.setItem('str_final', streak);
+            localStorage.setItem('ld_final', lastDate);
             db.ref('users/' + userId).set({ name: tg.initDataUnsafe?.user?.first_name || "Пилот", score: Math.floor(score) });
         }
 
-        // ВКЛЮЧЕНИЕ МУЗЫКИ
-        document.getElementById('toggle-music').onclick = function() {
-            if(!musicOn) {
-                audio.play().then(() => {
-                    this.innerText = "ВЫКЛ";
-                    this.style.background = "#ff3b30";
-                    musicOn = true;
-                }).catch(e => {
-                    tg.showAlert("Сначала тапни по ракете, а потом включай!");
-                });
-            } else {
-                audio.pause();
-                this.innerText = "ВКЛ";
-                this.style.background = "var(--blue)";
-                musicOn = false;
-            }
-        };
-
+        // Главный клик
         document.getElementById('game').onclick = (e) => {
-            // ФИКС ДЛЯ APPLE: Активируем аудио-контекст при первом тапе
-            if (audio.paused && !musicOn) {
-                audio.play().then(() => { audio.pause(); }).catch(err => {});
+            // Разблокировка звука для iPhone при первом тапе
+            if (!audioUnlocked) {
+                audio.play().then(() => { audio.pause(); audioUnlocked = true; }).catch(() => {});
             }
 
             score += pwr;
@@ -155,8 +148,40 @@
             refresh();
         };
 
+        // Логика кнопки музыки
+        document.getElementById('toggle-music').onclick = function() {
+            if(!musicOn) {
+                audio.play().then(() => {
+                    this.innerText = "ВЫКЛ";
+                    this.style.background = "#ff3b30";
+                    musicOn = true;
+                }).catch(() => tg.showAlert("Сначала тапни по ракете!"));
+            } else {
+                audio.pause();
+                this.innerText = "ВКЛ";
+                this.style.background = "var(--blue)";
+                musicOn = false;
+            }
+        };
+
         document.getElementById('settings-btn').onclick = () => document.getElementById('settings-modal').style.display = 'flex';
-        document.getElementById('upd-btn').onclick = () => { if(score >= cost) { score -= cost; pwr++; cost = Math.round(cost * 1.7); refresh(); } };
+        
+        document.getElementById('upd-btn').onclick = () => { 
+            if(score >= cost) { score -= cost; pwr++; cost = Math.round(cost * 1.7); refresh(); } 
+        };
+
+        document.getElementById('top-btn').onclick = () => {
+            const list = document.getElementById('top-list');
+            list.innerHTML = "Загрузка...";
+            document.getElementById('top-modal').style.display = 'flex';
+            db.ref('users').orderByChild('score').limitToLast(10).once('value', (s) => {
+                list.innerHTML = "";
+                let arr = []; s.forEach(x => arr.push(x.val()));
+                arr.reverse().forEach((p, i) => {
+                    list.innerHTML += `<div class="row"><span>${i+1}. ${p.name}</span><b>${p.score}</b></div>`;
+                });
+            });
+        };
 
         refresh();
     </script>
