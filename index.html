@@ -60,7 +60,7 @@
 
     <div id="footer">
         <button id="btn-upd" class="btn">⚡ УЛУЧШИТЬ<span id="cost-upd">50</span></button>
-        <button id="btn-case" class="btn">💎 КЕЙС<span>350</span></button>
+        <button id="btn-case" class="btn">💎 КЕЙС<span>900</span></button>
         <button id="btn-friends" class="btn">👥 ДРУЗЬЯ</button>
         <button id="btn-top" class="btn">🏆 РЕЙТИНГ</button>
         <button id="btn-gift" class="btn">🎁 ПОДАРОК</button>
@@ -78,43 +78,9 @@
         </div>
     </div>
 
-    <div id="modal-top" class="modal">
-        <div class="modal-box">
-            <h2 style="margin:0;">🏆 Топ Пилотов</h2>
-            <div id="top-list">Загрузка...</div>
-            <button onclick="closeModal('modal-top')" class="btn" style="width:100%; background:var(--gray); height: 50px;">ЗАКРЫТЬ</button>
-        </div>
-    </div>
-
-    <div id="modal-friends" class="modal">
-        <div class="modal-box">
-            <h1 style="font-size: 40px; margin: 0;">👥</h1>
-            <h2>Пригласи друзей</h2>
-            <p style="color: #888; font-size: 14px; margin-bottom: 25px;">Получай по <b style="color:var(--orange);">+5,000</b> за каждого нового пилота!</p>
-            <button id="btn-invite-act" class="btn" style="width:100%; background:var(--orange); height: 50px;">ОТПРАВИТЬ ССЫЛКУ</button>
-            <button onclick="closeModal('modal-friends')" class="btn" style="width:100%; background:transparent; margin-top:10px; height: 40px;">ПОЗЖЕ</button>
-        </div>
-    </div>
-
-    <div id="modal-sets" class="modal">
-        <div class="modal-box">
-            <h2 style="margin:0 0 20px 0;">Настройки</h2>
-            <button id="toggle-mu" class="btn" style="width:100%; background:var(--blue); margin-bottom:15px; height: 50px;">МУЗЫКА: ВКЛ</button>
-            <button onclick="closeModal('modal-sets')" class="btn" style="width:100%; background:var(--gray); height: 50px;">ЗАКРЫТЬ</button>
-            <span class="version-tag">Версия: 1.2.2</span>
-        </div>
-    </div>
-
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyAhFyYz8tC0VZqNKQweM1VH7A9rzcLQ7L4",
-            authDomain: "rockettap-22e98.firebaseapp.com",
-            databaseURL: "https://rockettap-22e98-default-rtdb.firebaseio.com",
-            projectId: "rockettap-22e98",
-            storageBucket: "rockettap-22e98.firebasestorage.app",
-            messagingSenderId: "800263373343",
-            appId: "1:800263373343:web:ed6db2e822f61d8257cb2a"
-        };
+        // Инициализация Firebase и Telegram...
+        const firebaseConfig = { apiKey: "AIzaSyAhFyYz8tC0VZqNKQweM1VH7A9rzcLQ7L4", authDomain: "rockettap-22e98.firebaseapp.com", databaseURL: "https://rockettap-22e98-default-rtdb.firebaseio.com", projectId: "rockettap-22e98", storageBucket: "rockettap-22e98.firebasestorage.app", messagingSenderId: "800263373343", appId: "1:800263373343:web:ed6db2e822f61d8257cb2a" };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const tg = window.Telegram.WebApp;
@@ -125,16 +91,13 @@
         let cost = Number(localStorage.getItem('rk_ct')) || 50;
         let lastGift = localStorage.getItem('rk_gift') || "";
         let musicOn = true;
-        let audioStarted = false;
-        const casePrice = 350;
+        const casePrice = 900; 
 
         const uid = tg.initDataUnsafe?.user?.id || "player_local";
 
         function save() {
-            localStorage.setItem('rk_sc', score);
-            localStorage.setItem('rk_pw', pwr);
-            localStorage.setItem('rk_ct', cost);
-            localStorage.setItem('rk_gift', lastGift);
+            localStorage.setItem('rk_sc', score); localStorage.setItem('rk_pw', pwr);
+            localStorage.setItem('rk_ct', cost); localStorage.setItem('rk_gift', lastGift);
             const name = tg.initDataUnsafe?.user?.first_name || "Пилот";
             db.ref('leaderboard/' + uid).update({ name: name, score: Math.floor(score) });
             updateUI();
@@ -146,9 +109,6 @@
             document.getElementById('cost-upd').innerText = cost;
             document.getElementById('btn-upd').disabled = score < cost;
             document.getElementById('btn-case').disabled = score < casePrice;
-            const today = new Date().toDateString();
-            document.getElementById('btn-gift').disabled = (lastGift === today);
-            document.getElementById('btn-gift').innerText = (lastGift === today) ? "ВЗЯТО ✅" : "🎁 ПОДАРОК";
         }
 
         function handleTap(x, y) {
@@ -162,16 +122,18 @@
             save();
         }
 
-        document.getElementById('rocket').addEventListener('touchstart', (e) => {
-            e.preventDefault();
-            handleTap(e.touches[0].clientX, e.touches[0].clientY);
-        });
+        document.getElementById('rocket').addEventListener('touchstart', (e) => { e.preventDefault(); handleTap(e.touches[0].clientX, e.touches[0].clientY); });
 
-        document.getElementById('btn-upd').onclick = () => {
-            if(score >= cost) { score -= cost; pwr++; cost = Math.round(cost * 1.6); save(); tg.HapticFeedback.notificationOccurred('success'); }
-        };
+        document.getElementById('btn-upd').onclick = () => { if(score >= cost) { score -= cost; pwr++; cost = Math.round(cost * 1.6); save(); } };
 
-        const prizes = [50, 100, 200, 500, 1000, 5000];
+        // НОВАЯ ЛОГИКА ШАНСОВ
+        function getWinAmount() {
+            const rand = Math.random() * 100; // Число от 0 до 100
+            if (rand < 0.5) return Math.random() > 0.5 ? 10000 : 5000; // 0.5% Шанс на топ
+            if (rand < 29.5) return Math.random() > 0.5 ? 1000 : 500;  // 29% Шанс на средний приз
+            return Math.random() > 0.5 ? 100 : 50;                   // 70.5% Шанс на мелкий приз
+        }
+
         document.getElementById('btn-case').onclick = () => {
             if(score < casePrice) return;
             score -= casePrice; save();
@@ -184,16 +146,23 @@
             track.innerHTML = '';
             
             const winIdx = 40;
-            let finalWin = 0;
+            let finalWin = getWinAmount();
+            
             for(let i = 0; i < 50; i++) {
-                let v = prizes[Math.floor(Math.random()*prizes.length)];
-                if(i === winIdx) finalWin = v;
-                track.innerHTML += `<div class="item" style="color:${v > 400 ? 'var(--orange)' : 'white'}">${v}</div>`;
+                let v;
+                if(i === winIdx) {
+                    v = finalWin;
+                } else {
+                    // Просто заполняем ленту случайными числами для красоты
+                    const r = Math.random();
+                    v = r < 0.7 ? 50 : (r < 0.95 ? 500 : 5000);
+                }
+                track.innerHTML += `<div class="item" style="color:${v >= 5000 ? 'var(--red)' : (v >= 500 ? 'var(--orange)' : 'white')}">${v}</div>`;
             }
 
             setTimeout(() => {
-                track.style.transition = 'transform 4s cubic-bezier(0.15, 0, 0.15, 1)';
-                const shift = (winIdx * 100) + 50 - (document.getElementById('roll-wrap').offsetWidth/2);
+                track.style.transition = 'transform 4s cubic-bezier(0.1, 0, 0.1, 1)';
+                const shift = (winIdx * 100) + 50 - (document.getElementById('roll-wrap').offsetWidth / 2);
                 track.style.transform = `translateX(-${shift}px)`;
                 setTimeout(() => {
                     score += finalWin; save();
@@ -204,48 +173,9 @@
             }, 50);
         };
 
-        document.getElementById('btn-gift').onclick = () => {
-            const today = new Date().toDateString();
-            if(lastGift !== today) { score += 2500; lastGift = today; save(); tg.showAlert("Бонус +2500 получен!"); }
-        };
-
-        document.getElementById('btn-top').onclick = () => {
-            document.getElementById('modal-top').style.display = 'flex';
-            const listDiv = document.getElementById('top-list');
-            listDiv.innerHTML = "<div style='padding:20px; text-align:center;'>Загрузка...</div>";
-            db.ref('leaderboard').orderByChild('score').limitToLast(10).once('value').then((snap) => {
-                listDiv.innerHTML = "";
-                let players = [];
-                snap.forEach(c => { players.push(c.val()); });
-                players.reverse().forEach((p, i) => {
-                    listDiv.innerHTML += `<div class="row"><span>${i+1}. ${p.name}</span><b>${p.score.toLocaleString()}</b></div>`;
-                });
-            });
-        };
-
-        document.getElementById('btn-friends').onclick = () => document.getElementById('modal-friends').style.display = 'flex';
-        document.getElementById('btn-invite-act').onclick = () => {
-            const botUrl = "https://t.me/ТВОЙ_БОТ_USERNAME?startapp=" + uid; 
-            const text = "🚀 Стань лучшим пилотом! По ссылке бонус +5,000:";
-            tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(botUrl)}&text=${encodeURIComponent(text)}`);
-        };
-
-        document.getElementById('btn-sets').onclick = () => document.getElementById('modal-sets').style.display = 'flex';
-        document.getElementById('toggle-mu').onclick = function() {
-            musicOn = !musicOn; const audio = document.getElementById('bg-music');
-            if(musicOn) audio.play(); else audio.pause();
-            this.innerText = `МУЗЫКА: ${musicOn ? 'ВКЛ' : 'ВЫКЛ'}`;
-            this.style.background = musicOn ? 'var(--blue)' : 'var(--red)';
-        };
-
-        function closeModal(id) { 
-            document.getElementById(id).style.display = 'none'; 
-            if(id === 'modal-case') document.getElementById('case-title').innerText = "УДАЧИ, ПИЛОТ!";
-        }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         document.getElementById('btn-claim').onclick = () => closeModal('modal-case');
-        function startAudio() { if(!audioStarted && musicOn) { document.getElementById('bg-music').play().then(()=>audioStarted=true).catch(()=>{}); } }
-        
         updateUI();
     </script>
-</body>
+    </body>
 </html>
