@@ -10,10 +10,9 @@
         :root { --bg: #000; --orange: #ff9f00; --blue: #007aff; --purple: #af52de; --gray: #2c2c2e; --red: #ff3b30; }
         body { background: var(--bg); color: white; font-family: -apple-system, sans-serif; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; -webkit-user-select: none; }
 
-        #header { padding-top: env(safe-area-inset-top); height: 110px; text-align: center; display: flex; flex-direction: column; justify-content: center; background: #000; }
+        #header { padding-top: env(safe-area-inset-top); height: 110px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
         #score { font-size: 50px; font-weight: 900; color: var(--orange); text-shadow: 0 0 20px rgba(255,159,0,0.5); }
-        #stats { font-size: 14px; color: #888; }
-
+        
         #game-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; position: relative; }
         #rocket { width: 180px; height: 180px; background: radial-gradient(circle, #ffb300, #ff8c00); border-radius: 50%; border: 6px solid #fff; font-size: 80px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 50px rgba(255,159,0,0.6); transition: transform 0.05s; z-index: 10; touch-action: manipulation; }
         #rocket:active { transform: scale(0.85); }
@@ -22,26 +21,26 @@
         @keyframes fly { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-160px); opacity: 0; } }
 
         #footer { background: #1c1c1e; padding: 15px 15px calc(20px + env(safe-area-inset-bottom)); border-radius: 30px 30px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border-top: 1px solid #333; }
-        .btn { height: 52px; border: none; border-radius: 16px; font-weight: bold; font-size: 14px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; }
-        
+        .btn { height: 52px; border: none; border-radius: 16px; font-weight: bold; font-size: 14px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .btn:disabled { opacity: 0.3; }
+
         #btn-upd { background: var(--blue); }
         #btn-case { background: var(--purple); }
         #btn-gift { background: #fff; color: #000; }
         #btn-top { background: var(--gray); }
-        #btn-sets { background: #3a3a3c; grid-column: span 2; margin-top: 5px; }
-        .btn:disabled { opacity: 0.3; pointer-events: none; }
 
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
         .modal-box { width: 100%; max-width: 380px; background: #1c1c1e; border-radius: 25px; padding: 25px; box-sizing: border-box; text-align: center; border: 1px solid #444; }
 
+        /* РУЛЕТКА С КРАЙНЕЙ СТРЕЛКОЙ */
         #roll-wrap { width: 100%; height: 100px; border: 2px solid #555; margin: 25px 0; overflow: hidden; position: relative; background: #000; border-radius: 15px; }
         #roll-track { display: flex; position: absolute; left: 0; height: 100%; transition: transform 4s cubic-bezier(0.1, 0, 0.1, 1); }
         .item { min-width: 100px; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 26px; border-right: 1px solid #222; }
         
-        /* АНИМИРОВАННЫЙ ХИТБОКС (ДВИЖЕТСЯ ВЛЕВО-ВПРАВО) */
+        /* СТРЕЛКА СМЕЩЕНА ВЛЕВО (20%) */
         #hitbox { 
             position: absolute; 
-            left: 50%; 
+            left: 20%; 
             top: 0; 
             bottom: 0; 
             width: 4px; 
@@ -49,30 +48,20 @@
             transform: translateX(-50%); 
             z-index: 50; 
             box-shadow: 0 0 20px var(--red);
-            animation: moveSide 2s ease-in-out infinite; /* Сама анимация */
         }
         #hitbox::before { content: '▼'; position: absolute; top: -18px; left: -8px; color: var(--red); font-size: 20px; }
         #hitbox::after { content: '▲'; position: absolute; bottom: -18px; left: -8px; color: var(--red); font-size: 20px; }
 
-        /* Логика движения стрелки */
-        @keyframes moveSide {
-            0%, 100% { left: 40%; }
-            50% { left: 60%; }
-        }
-
-        #top-list { margin: 20px 0; max-height: 250px; overflow-y: auto; text-align: left; }
-        .row { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #2c2c2e; font-size: 15px; }
+        .row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #2c2c2e; }
     </style>
 </head>
 <body onclick="startAudio()">
 
-    <audio id="bg-music" loop>
-        <source src="https://www.bensound.com/bensound-music/bensound-slowmotion.mp3" type="audio/mpeg">
-    </audio>
+    <audio id="bg-music" loop><source src="https://www.bensound.com/bensound-music/bensound-slowmotion.mp3" type="audio/mpeg"></audio>
 
     <div id="header">
         <div id="score">0</div>
-        <div id="stats">За тап: <b id="val-pwr">+1</b></div>
+        <div style="font-size:14px; color:#888;">За тап: <b id="val-pwr">+1</b></div>
     </div>
 
     <div id="game-area"><div id="rocket">🚀</div></div>
@@ -82,34 +71,24 @@
         <button id="btn-case" class="btn">Кейс (350)</button>
         <button id="btn-gift" class="btn">🎁 Подарок</button>
         <button id="btn-top" class="btn">🏆 ТОП</button>
-        <button id="btn-sets" class="btn">⚙️ НАСТРОЙКИ</button>
     </div>
 
     <div id="modal-case" class="modal">
         <div class="modal-box">
-            <h2 id="case-title" style="margin:0; color:var(--purple);">ОТКРЫТИЕ КЕЙСА</h2>
+            <h2 id="case-title" style="margin:0; color:var(--purple);">КЕЙС</h2>
             <div id="roll-wrap">
                 <div id="hitbox"></div>
                 <div id="roll-track"></div>
             </div>
-            <button id="btn-claim" class="btn" style="display:none; width:100%; background:var(--blue);">ЗАБРАТЬ ВЫИГРЫШ</button>
+            <button id="btn-claim" class="btn" style="display:none; width:100%; background:var(--blue);">ЗАБРАТЬ</button>
         </div>
     </div>
 
     <div id="modal-top" class="modal">
         <div class="modal-box">
-            <h2>🏆 Топ Пилотов</h2>
-            <div id="top-list">Связь с базой...</div>
-            <button onclick="closeModal('modal-top')" class="btn" style="width:100%; background:var(--gray);">ЗАКРЫТЬ</button>
-        </div>
-    </div>
-
-    <div id="modal-sets" class="modal">
-        <div class="modal-box">
-            <h2>Настройки</h2>
-            <button id="toggle-mu" class="btn" style="width:100%; background:var(--blue); margin-bottom:15px;">МУЗЫКА: ВКЛ</button>
-            <div style="color:#666; font-size:12px;">Версия: <b>1.2.2 обновление</b></div>
-            <button onclick="closeModal('modal-sets')" class="btn" style="width:100%; background:var(--gray); margin-top:15px;">ЗАКРЫТЬ</button>
+            <h2>🏆 ТОП Пилотов</h2>
+            <div id="top-list">Загрузка...</div>
+            <button onclick="closeModal('modal-top')" class="btn" style="width:100%; background:var(--gray); margin-top:15px;">ЗАКРЫТЬ</button>
         </div>
     </div>
 
@@ -128,21 +107,16 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        let score = Number(localStorage.getItem('tap_v122_sc')) || 0;
-        let pwr = Number(localStorage.getItem('tap_v122_pw')) || 1;
-        let cost = Number(localStorage.getItem('tap_v122_ct')) || 50;
-        let lastGift = localStorage.getItem('tap_v122_gift') || "";
+        let score = Number(localStorage.getItem('rk_sc_v3')) || 0;
+        let pwr = Number(localStorage.getItem('rk_pw_v3')) || 1;
+        let cost = Number(localStorage.getItem('rk_ct_v3')) || 50;
+        let lastGift = localStorage.getItem('rk_gift_v3') || "";
         
-        const audio = document.getElementById('bg-music');
-        let musicOn = true;
-        let audioStarted = false;
-
         function save() {
-            localStorage.setItem('tap_v122_sc', score);
-            localStorage.setItem('tap_v122_pw', pwr);
-            localStorage.setItem('tap_v122_ct', cost);
-            localStorage.setItem('tap_v122_gift', lastGift);
-            
+            localStorage.setItem('rk_sc_v3', score);
+            localStorage.setItem('rk_pw_v3', pwr);
+            localStorage.setItem('rk_ct_v3', cost);
+            localStorage.setItem('rk_gift_v3', lastGift);
             const uid = tg.initDataUnsafe?.user?.id || "player";
             const name = tg.initDataUnsafe?.user?.first_name || "Пилот";
             db.ref('leaderboard/' + uid).set({ name: name, score: Math.floor(score) });
@@ -155,22 +129,9 @@
             document.getElementById('btn-upd').innerText = `Улучшить (${cost})`;
             document.getElementById('btn-upd').disabled = score < cost;
             document.getElementById('btn-case').disabled = score < 350;
-
             const today = new Date().toDateString();
-            const gBtn = document.getElementById('btn-gift');
-            if(lastGift === today) {
-                gBtn.disabled = true;
-                gBtn.innerText = "Взято ✅";
-            } else {
-                gBtn.disabled = false;
-                gBtn.innerText = "🎁 Подарок";
-            }
-        }
-
-        function startAudio() {
-            if(!audioStarted && musicOn) {
-                audio.play().then(() => audioStarted = true).catch(() => {});
-            }
+            document.getElementById('btn-gift').innerText = (lastGift === today) ? "Взято ✅" : "🎁 Подарок";
+            document.getElementById('btn-gift').disabled = (lastGift === today);
         }
 
         document.getElementById('rocket').onclick = (e) => {
@@ -185,107 +146,72 @@
         };
 
         document.getElementById('btn-upd').onclick = () => {
-            if(score >= cost) {
-                score -= cost; pwr++; cost = Math.round(cost * 1.7);
-                save();
-            }
+            if(score >= cost) { score -= cost; pwr++; cost = Math.round(cost * 1.7); save(); }
         };
 
-        const rewards = [
-            {v: 10000, w: 1}, {v: 5000, w: 3}, {v: 1000, w: 10}, 
-            {v: 500, w: 20}, {v: 100, w: 40}, {v: 50, w: 60}
-        ];
-
-        function getReward() {
-            let totalW = rewards.reduce((s, r) => s + r.w, 0);
-            let rnd = Math.random() * totalW;
-            for (let r of rewards) { if(rnd < r.w) return r.v; rnd -= r.w; }
-            return 50;
-        }
-
+        // КЕЙС - СТРЕЛКА СБОКУ
         document.getElementById('btn-case').onclick = () => {
             if(score < 350) return;
             score -= 350; save();
-            
-            const modal = document.getElementById('modal-case');
             const track = document.getElementById('roll-track');
-            const claim = document.getElementById('btn-claim');
-            const hb = document.getElementById('hitbox');
-
+            const modal = document.getElementById('modal-case');
             modal.style.display = 'flex';
-            claim.style.display = 'none';
-            document.getElementById('case-title').innerText = "УДАЧИ...";
-            
-            // Останавливаем анимацию на время броска, чтобы зафиксировать в центре
-            hb.style.animation = 'none';
-            hb.style.left = '50%';
-
+            document.getElementById('btn-claim').style.display = 'none';
             track.style.transition = 'none';
             track.style.transform = 'translateX(0)';
             track.innerHTML = '';
             
-            let list = [];
+            let items = [];
+            const prizes = [10000, 5000, 1000, 500, 100, 50];
             for(let i=0; i<60; i++) {
-                let v = getReward();
-                list.push(v);
-                let col = v >= 5000 ? '#ff9f00' : (v >= 1000 ? '#af52de' : '#007aff');
-                track.innerHTML += `<div class="item" style="color:${col}">${v}</div>`;
+                let v = prizes[Math.floor(Math.random() * prizes.length)];
+                items.push(v);
+                track.innerHTML += `<div class="item" style="color:${v>=1000?'#ff9f00':'#007aff'}">${v}</div>`;
             }
 
             setTimeout(() => {
                 track.style.transition = 'transform 4s cubic-bezier(0.1, 0, 0.1, 1)';
                 const itemW = 100;
-                const winIdx = 50; 
-                const containerW = document.getElementById('roll-wrap').offsetWidth;
-                const shift = (winIdx * itemW) + (itemW / 2) - (containerW * 0.5);
-                track.style.transform = `translateX(-${shift}px)`;
+                const winIdx = 45; // Какой по счету предмет выиграет
+                const wrapW = document.getElementById('roll-wrap').offsetWidth;
+                
+                // РАСЧЕТ: Чтобы предмет встал под стрелку (20% от ширины)
+                // Сдвигаем на (индекс * ширина) - (позиция стрелки в пикселях) + (половина предмета для центра)
+                const arrowPos = wrapW * 0.2; 
+                const finalShift = (winIdx * itemW) - arrowPos + (itemW / 2);
+                
+                track.style.transform = `translateX(-${finalShift}px)`;
                 
                 setTimeout(() => {
-                    let win = list[winIdx];
+                    let win = items[winIdx];
                     score += win; save();
                     document.getElementById('case-title').innerText = `ВЫИГРЫШ: ${win}`;
-                    claim.style.display = 'block';
-                    // Возвращаем анимацию после выигрыша
-                    hb.style.animation = 'moveSide 2s ease-in-out infinite';
+                    document.getElementById('btn-claim').style.display = 'block';
                 }, 4100);
             }, 50);
         };
 
         document.getElementById('btn-gift').onclick = () => {
             const today = new Date().toDateString();
-            if(lastGift !== today) {
-                score += 2500;
-                lastGift = today;
-                save();
-                tg.showAlert("Вы получили бонус: 2500 монет!");
-            }
+            if(lastGift !== today) { score += 2500; lastGift = today; save(); tg.showAlert("Бонус 2500!"); }
         };
 
         document.getElementById('btn-top').onclick = () => {
             document.getElementById('modal-top').style.display = 'flex';
-            const list = document.getElementById('top-list');
-            list.innerHTML = "Загрузка...";
-            db.ref('leaderboard').orderByChild('score').limitToLast(15).on('value', (snap) => {
-                list.innerHTML = "";
-                let players = [];
-                snap.forEach(c => { players.push(c.val()); });
-                players.reverse().forEach((p, i) => {
-                    list.innerHTML += `<div class="row"><span>${i+1}. ${p.name}</span><b>${p.score.toLocaleString()}</b></div>`;
+            db.ref('leaderboard').orderByChild('score').limitToLast(10).on('value', s => {
+                let html = "";
+                let res = [];
+                s.forEach(x => res.push(x.val()));
+                res.reverse().forEach((p, i) => {
+                    html += `<div class="row"><span>${i+1}. ${p.name}</span><b>${p.score}</b></div>`;
                 });
+                document.getElementById('top-list').innerHTML = html;
             });
-        };
-
-        document.getElementById('btn-sets').onclick = () => document.getElementById('modal-sets').style.display = 'flex';
-        document.getElementById('toggle-mu').onclick = function() {
-            musicOn = !musicOn;
-            if(!musicOn) audio.pause(); else audio.play();
-            this.innerText = `МУЗЫКА: ${musicOn ? 'ВКЛ' : 'ВЫКЛ'}`;
-            this.style.background = musicOn ? 'var(--blue)' : 'var(--red)';
         };
 
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         document.getElementById('btn-claim').onclick = () => closeModal('modal-case');
-
+        function startAudio() { document.getElementById('bg-music').play().catch(()=>{}); }
         updateUI();
     </script>
 </body>
