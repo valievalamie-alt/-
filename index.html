@@ -22,7 +22,7 @@
         @keyframes floatUp { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-120px); opacity: 0; } }
 
         #menu { background: #1c1c1e; padding: 15px 15px calc(20px + env(safe-area-inset-bottom)); border-radius: 28px 28px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn { height: 50px; border: none; border-radius: 14px; font-weight: bold; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; -webkit-tap-highlight-color: transparent; text-decoration: none; }
+        .btn { height: 50px; border: none; border-radius: 14px; font-weight: bold; font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: white; -webkit-tap-highlight-color: transparent; }
         
         #upd-btn { background: var(--blue); }
         #case-btn { background: var(--purple); }
@@ -53,7 +53,7 @@
     <div id="header">
         <div id="score">0</div>
         <div id="stats-bar">
-            <span>Сила: <b id="pwr-val">+1</b></span>
+            <span>Тап: <b id="pwr-val">+1</b></span>
             <span>Серия: <b id="streak-val">0</b></span>
         </div>
     </div>
@@ -64,13 +64,13 @@
         <button id="upd-btn" class="btn">Улучшить</button>
         <button id="case-btn" class="btn">Кейс (350)</button>
         <button id="daily-btn" class="btn">🎁 Подарок</button>
-        <button id="top-btn" class="btn">Лидерборд</button>
+        <button id="top-btn" class="btn">Топ</button>
         <button id="settings-btn" class="btn">⚙️ НАСТРОЙКИ</button>
     </div>
 
     <div id="case-modal" class="modal">
         <div class="modal-content">
-            <h3 id="case-status">Удачи!</h3>
+            <h3 id="case-status">Кейс</h3>
             <div id="roulette-container">
                 <div id="roulette-line"></div>
                 <div id="roulette-track"></div>
@@ -81,7 +81,7 @@
 
     <div id="top-modal" class="modal">
         <div class="modal-content">
-            <h2>Топ Игроков</h2>
+            <h2>Лидерборд</h2>
             <div id="top-list">Загрузка...</div>
             <button onclick="document.getElementById('top-modal').style.display='none'" class="btn" style="background:#444; width:100%;">ЗАКРЫТЬ</button>
         </div>
@@ -94,7 +94,7 @@
                 <span>Музыка</span>
                 <button id="toggle-music" class="btn" style="width:120px; height:38px; background:var(--blue);">ВКЛЮЧЕНО</button>
             </div>
-            <p style="font-size:10px; color:#555; margin-top:15px;">Версия: 1.6.0 (Ultimate)</p>
+            <p style="font-size:10px; color:#555; margin-top:15px;">Версия: 1.7.0 (Fast Fix)</p>
             <button onclick="document.getElementById('settings-modal').style.display='none'" class="btn" style="background:#444; width:100%;">ЗАКРЫТЬ</button>
         </div>
     </div>
@@ -114,11 +114,11 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        let score = Number(localStorage.getItem('sc_v16')) || 0;
-        let pwr = Number(localStorage.getItem('pw_v16')) || 1;
-        let cost = Number(localStorage.getItem('ct_v16')) || 50;
-        let streak = Number(localStorage.getItem('str_v16')) || 0;
-        let lastDate = localStorage.getItem('ld_v16') || "";
+        let score = Number(localStorage.getItem('sc_v17')) || 0;
+        let pwr = Number(localStorage.getItem('pw_v17')) || 1;
+        let cost = Number(localStorage.getItem('ct_v17')) || 50;
+        let streak = Number(localStorage.getItem('str_v17')) || 0;
+        let lastDate = localStorage.getItem('ld_v17') || "";
         
         const audio = document.getElementById('bg-audio');
         let isMusicPlaying = false; 
@@ -133,26 +133,24 @@
             document.getElementById('upd-btn').className = score < cost ? "btn locked" : "btn";
             document.getElementById('case-btn').className = score < 350 ? "btn locked" : "btn";
 
-            localStorage.setItem('sc_v16', score);
-            localStorage.setItem('pw_v16', pwr);
-            localStorage.setItem('ct_v16', cost);
-            localStorage.setItem('str_v16', streak);
-            localStorage.setItem('ld_v16', lastDate);
+            localStorage.setItem('sc_v17', score);
+            localStorage.setItem('pw_v17', pwr);
+            localStorage.setItem('ct_v17', cost);
+            localStorage.setItem('str_v17', streak);
+            localStorage.setItem('ld_v17', lastDate);
             
             const uid = tg.initDataUnsafe?.user?.id || "guest";
             const uname = tg.initDataUnsafe?.user?.first_name || "Пилот";
-            db.ref('leaderboard/' + uid).set({ name: uname, score: Math.floor(score) });
+            db.ref('top_players/' + uid).set({ name: uname, score: Math.floor(score) });
         }
 
-        // Первый тап — включаем всё
         document.getElementById('game').onclick = (e) => {
             if (!audioUnlocked) {
                 audio.play().then(() => {
                     audioUnlocked = true;
                     isMusicPlaying = true;
-                    document.getElementById('toggle-music').innerText = "ВКЛЮЧЕНО";
-                    document.getElementById('toggle-music').style.background = "var(--blue)";
-                }).catch(err => console.log("Audio waiting..."));
+                    updateMusicBtn();
+                }).catch(e => console.log("Unlock needed"));
             }
             score += pwr;
             const pop = document.createElement('div');
@@ -166,23 +164,24 @@
             refresh();
         };
 
-        // Настройки музыки
-        document.getElementById('toggle-music').onclick = function() {
+        function updateMusicBtn() {
+            const btn = document.getElementById('toggle-music');
             if(isMusicPlaying) {
-                audio.pause();
-                this.innerText = "ВЫКЛЮЧЕНО";
-                this.style.background = "#ff3b30";
-                isMusicPlaying = false;
+                btn.innerText = "ВКЛЮЧЕНО";
+                btn.style.background = "var(--blue)";
             } else {
-                audio.play();
-                this.innerText = "ВКЛЮЧЕНО";
-                this.style.background = "var(--blue)";
-                isMusicPlaying = true;
+                btn.innerText = "ВЫКЛЮЧЕНО";
+                btn.style.background = "#ff3b30";
             }
+        }
+
+        document.getElementById('toggle-music').onclick = function() {
+            if(isMusicPlaying) { audio.pause(); isMusicPlaying = false; } 
+            else { audio.play(); isMusicPlaying = true; }
+            updateMusicBtn();
         };
 
         // КЕЙС
-        const caseItems = [{v:50,c:'#888',p:70},{v:500,c:'cyan',p:20},{v:10000,c:'gold',p:10}];
         document.getElementById('case-btn').onclick = () => {
             if(score < 350) return;
             score -= 350; refresh();
@@ -190,23 +189,22 @@
             const track = document.getElementById('roulette-track');
             modal.style.display = 'flex';
             document.getElementById('close-case').style.display = 'none';
-            document.getElementById('case-status').innerText = "Крутим...";
+            document.getElementById('case-status').innerText = "Открытие...";
             track.style.transition = 'none'; track.style.transform = 'translateX(0)'; track.innerHTML = '';
             
             let pool = [];
             for(let i=0; i<40; i++) {
-                let r = Math.random()*100, acc = 0, sel = caseItems[0];
-                for(let it of caseItems) { acc += it.p; if(r <= acc) { sel = it; break; } }
-                pool.push(sel);
-                track.innerHTML += `<div class="case-item" style="color:${sel.c}">${sel.v}</div>`;
+                let r = Math.random()*100, val = r > 90 ? 10000 : (r > 70 ? 500 : 50);
+                pool.push(val);
+                track.innerHTML += `<div class="case-item">${val}</div>`;
             }
             setTimeout(() => {
                 track.style.transition = 'transform 3s cubic-bezier(0.1, 0, 0.1, 1)';
                 track.style.transform = `translateX(-${(35 * 70) - 110}px)`;
             }, 50);
             setTimeout(() => {
-                let win = pool[35].v; score += win; refresh();
-                document.getElementById('case-status').innerText = "Выпало: " + win.toLocaleString();
+                let win = pool[35]; score += win; refresh();
+                document.getElementById('case-status').innerText = "Выпало: " + win;
                 document.getElementById('close-case').style.display = 'block';
             }, 3200);
         };
@@ -217,7 +215,7 @@
             const list = document.getElementById('top-list');
             list.innerHTML = "Загрузка...";
             document.getElementById('top-modal').style.display = 'flex';
-            db.ref('leaderboard').orderByChild('score').limitToLast(10).once('value', (s) => {
+            db.ref('top_players').orderByChild('score').limitToLast(10).once('value', (s) => {
                 list.innerHTML = "";
                 let arr = []; s.forEach(x => arr.push(x.val()));
                 arr.reverse().forEach((p, i) => {
@@ -229,11 +227,15 @@
         // ПОДАРОК
         document.getElementById('daily-btn').onclick = () => {
             const today = new Date().toLocaleDateString();
-            if (lastDate === today) return;
+            if (lastDate === today) {
+                tg.showAlert("Сегодня ты уже забирал подарок!");
+                return;
+            }
             const yes = new Date(); yes.setDate(yes.getDate()-1);
             streak = (lastDate === yes.toLocaleDateString()) ? streak + 1 : 1;
-            score += streak * 500; lastDate = today; refresh();
-            tg.showAlert(`Подарок: +${streak * 500} тапов!`);
+            let reward = streak * 500;
+            score += reward; lastDate = today; refresh();
+            tg.showAlert(`Твой подарок: +${reward} тапов! Приходи завтра.`);
         };
 
         document.getElementById('settings-btn').onclick = () => document.getElementById('settings-modal').style.display = 'flex';
