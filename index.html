@@ -76,8 +76,8 @@
     <div id="modal-top" class="modal">
         <div class="modal-box">
             <h2>🏆 Топ Пилотов</h2>
-            <div id="top-list">Загрузка...</div>
-            <button onclick="closeModal('modal-top')" class="btn" style="width:100%; background:var(--gray);">ЗАКРЫТЬ</button>
+            <div id="top-list">Загрузка данных...</div>
+            <button onclick="closeModal('modal-top')" class="btn" style="width:100%; background:var(--gray); margin-top: 10px;">ЗАКРЫТЬ</button>
         </div>
     </div>
 
@@ -116,13 +116,20 @@
             localStorage.setItem('rk_pw', pwr);
             localStorage.setItem('rk_ct', cost);
             localStorage.setItem('rk_gift', lastGift);
-            const uid = tg.initDataUnsafe?.user?.id || "player";
-            db.ref('leaderboard/' + uid).set({ name: tg.initDataUnsafe?.user?.first_name || "Пилот", score: Math.floor(score) });
+            
+            const uid = tg.initDataUnsafe?.user?.id || "player_local";
+            const name = tg.initDataUnsafe?.user?.first_name || "Пилот";
+            
+            // Сохранение в Firebase
+            db.ref('leaderboard/' + uid).set({ 
+                name: name, 
+                score: Math.floor(score) 
+            });
             updateUI();
         }
 
         function updateUI() {
-            document.getElementById('score').innerText = Math.floor(score).toLocaleString();
+            document.getElementById('score').innerText = Math.floor(score).toLocaleString('ru-RU');
             document.getElementById('val-pwr').innerText = "+" + pwr;
             document.getElementById('btn-upd').innerText = `Улучшить (${cost})`;
             document.getElementById('btn-upd').disabled = score < cost;
@@ -150,7 +157,6 @@
             if(score >= cost) { score -= cost; pwr++; cost = Math.round(cost * 1.5); save(); }
         };
 
-        // --- ЛОГИКА КЕЙСА С ШАНСАМИ ---
         const prizesWithWeights = [
             {v: 50, w: 60}, {v: 100, w: 30}, {v: 500, w: 7}, 
             {v: 1000, w: 2}, {v: 5000, w: 0.8}, {v: 10000, w: 0.2}
@@ -203,13 +209,26 @@
             if(lastGift !== today) { score += 2500; lastGift = today; save(); tg.showAlert("Бонус +2500!"); }
         };
 
+        // ИСПРАВЛЕННЫЙ ЛИДЕРБОРД
         document.getElementById('btn-top').onclick = () => {
             document.getElementById('modal-top').style.display = 'flex';
-            db.ref('leaderboard').orderByChild('score').limitToLast(10).on('value', (snap) => {
-                let html = ""; let players = [];
-                snap.forEach(c => players.push(c.val()));
-                players.reverse().forEach((p, i) => { html += `<div class="row"><span>${i+1}. ${p.name}</span><b>${p.score.toLocaleString()}</b></div>`; });
-                document.getElementById('top-list').innerHTML = html;
+            const listDiv = document.getElementById('top-list');
+            listDiv.innerHTML = "Загрузка...";
+
+            db.ref('leaderboard').orderByChild('score').limitToLast(10).once('value').then((snap) => {
+                listDiv.innerHTML = "";
+                if (!snap.exists()) {
+                    listDiv.innerHTML = "<center>Список пока пуст</center>";
+                    return;
+                }
+                let players = [];
+                snap.forEach(c => { players.push(c.val()); });
+                players.reverse().forEach((p, i) => {
+                    listDiv.innerHTML += `<div class="row"><span>${i+1}. ${p.name}</span><b>${p.score.toLocaleString('ru-RU')}</b></div>`;
+                });
+            }).catch(e => {
+                listDiv.innerHTML = "<center>Ошибка доступа</center>";
+                console.error(e);
             });
         };
 
