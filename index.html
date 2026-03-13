@@ -10,12 +10,10 @@
         :root { --bg: #000; --orange: #ff9f00; --blue: #007aff; --purple: #af52de; --gray: #2c2c2e; --red: #ff3b30; }
         body { background: var(--bg); color: white; font-family: -apple-system, sans-serif; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; -webkit-user-select: none; }
 
-        /* Шапка */
         #header { padding-top: env(safe-area-inset-top); height: 110px; text-align: center; display: flex; flex-direction: column; justify-content: center; background: #000; }
         #score { font-size: 50px; font-weight: 900; color: var(--orange); text-shadow: 0 0 20px rgba(255,159,0,0.5); }
         #stats { font-size: 14px; color: #888; }
 
-        /* Ракета */
         #game-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; position: relative; }
         #rocket { width: 180px; height: 180px; background: radial-gradient(circle, #ffb300, #ff8c00); border-radius: 50%; border: 6px solid #fff; font-size: 80px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 50px rgba(255,159,0,0.6); transition: transform 0.05s; z-index: 10; touch-action: manipulation; }
         #rocket:active { transform: scale(0.85); }
@@ -23,7 +21,6 @@
         .pop { position: absolute; font-size: 35px; font-weight: 900; color: white; pointer-events: none; animation: fly 0.6s ease-out forwards; z-index: 20; }
         @keyframes fly { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-160px); opacity: 0; } }
 
-        /* Меню */
         #footer { background: #1c1c1e; padding: 15px 15px calc(20px + env(safe-area-inset-bottom)); border-radius: 30px 30px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border-top: 1px solid #333; }
         .btn { height: 52px; border: none; border-radius: 16px; font-weight: bold; font-size: 14px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; }
         
@@ -34,19 +31,34 @@
         #btn-sets { background: #3a3a3c; grid-column: span 2; margin-top: 5px; }
         .btn:disabled { opacity: 0.3; pointer-events: none; }
 
-        /* Модалки */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
         .modal-box { width: 100%; max-width: 380px; background: #1c1c1e; border-radius: 25px; padding: 25px; box-sizing: border-box; text-align: center; border: 1px solid #444; }
 
-        /* РУЛЕТКА */
         #roll-wrap { width: 100%; height: 100px; border: 2px solid #555; margin: 25px 0; overflow: hidden; position: relative; background: #000; border-radius: 15px; }
         #roll-track { display: flex; position: absolute; left: 0; height: 100%; transition: transform 4s cubic-bezier(0.1, 0, 0.1, 1); }
         .item { min-width: 100px; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 26px; border-right: 1px solid #222; }
         
-        /* СДВИНУТАЯ ЛИНИЯ УДАЧИ (ХИТБОКС) */
-        #hitbox { position: absolute; left: 53%; top: 0; bottom: 0; width: 4px; background: var(--red); transform: translateX(-50%); z-index: 50; box-shadow: 0 0 20px var(--red); }
+        /* АНИМИРОВАННЫЙ ХИТБОКС (ДВИЖЕТСЯ ВЛЕВО-ВПРАВО) */
+        #hitbox { 
+            position: absolute; 
+            left: 50%; 
+            top: 0; 
+            bottom: 0; 
+            width: 4px; 
+            background: var(--red); 
+            transform: translateX(-50%); 
+            z-index: 50; 
+            box-shadow: 0 0 20px var(--red);
+            animation: moveSide 2s ease-in-out infinite; /* Сама анимация */
+        }
         #hitbox::before { content: '▼'; position: absolute; top: -18px; left: -8px; color: var(--red); font-size: 20px; }
         #hitbox::after { content: '▲'; position: absolute; bottom: -18px; left: -8px; color: var(--red); font-size: 20px; }
+
+        /* Логика движения стрелки */
+        @keyframes moveSide {
+            0%, 100% { left: 40%; }
+            50% { left: 60%; }
+        }
 
         #top-list { margin: 20px 0; max-height: 250px; overflow-y: auto; text-align: left; }
         .row { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #2c2c2e; font-size: 15px; }
@@ -96,7 +108,7 @@
         <div class="modal-box">
             <h2>Настройки</h2>
             <button id="toggle-mu" class="btn" style="width:100%; background:var(--blue); margin-bottom:15px;">МУЗЫКА: ВКЛ</button>
-            <div style="color:#666; font-size:12px;">Версия: <b>1.2.0 обновление</b></div>
+            <div style="color:#666; font-size:12px;">Версия: <b>1.2.2 обновление</b></div>
             <button onclick="closeModal('modal-sets')" class="btn" style="width:100%; background:var(--gray); margin-top:15px;">ЗАКРЫТЬ</button>
         </div>
     </div>
@@ -116,20 +128,20 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        let score = Number(localStorage.getItem('tap_v121_sc')) || 0;
-        let pwr = Number(localStorage.getItem('tap_v121_pw')) || 1;
-        let cost = Number(localStorage.getItem('tap_v121_ct')) || 50;
-        let lastGift = localStorage.getItem('tap_v121_gift') || "";
+        let score = Number(localStorage.getItem('tap_v122_sc')) || 0;
+        let pwr = Number(localStorage.getItem('tap_v122_pw')) || 1;
+        let cost = Number(localStorage.getItem('tap_v122_ct')) || 50;
+        let lastGift = localStorage.getItem('tap_v122_gift') || "";
         
         const audio = document.getElementById('bg-music');
         let musicOn = true;
         let audioStarted = false;
 
         function save() {
-            localStorage.setItem('tap_v121_sc', score);
-            localStorage.setItem('tap_v121_pw', pwr);
-            localStorage.setItem('tap_v121_ct', cost);
-            localStorage.setItem('tap_v121_gift', lastGift);
+            localStorage.setItem('tap_v122_sc', score);
+            localStorage.setItem('tap_v122_pw', pwr);
+            localStorage.setItem('tap_v122_ct', cost);
+            localStorage.setItem('tap_v122_gift', lastGift);
             
             const uid = tg.initDataUnsafe?.user?.id || "player";
             const name = tg.initDataUnsafe?.user?.first_name || "Пилот";
@@ -179,7 +191,6 @@
             }
         };
 
-        // КЕЙС
         const rewards = [
             {v: 10000, w: 1}, {v: 5000, w: 3}, {v: 1000, w: 10}, 
             {v: 500, w: 20}, {v: 100, w: 40}, {v: 50, w: 60}
@@ -199,10 +210,16 @@
             const modal = document.getElementById('modal-case');
             const track = document.getElementById('roll-track');
             const claim = document.getElementById('btn-claim');
+            const hb = document.getElementById('hitbox');
+
             modal.style.display = 'flex';
             claim.style.display = 'none';
             document.getElementById('case-title').innerText = "УДАЧИ...";
             
+            // Останавливаем анимацию на время броска, чтобы зафиксировать в центре
+            hb.style.animation = 'none';
+            hb.style.left = '50%';
+
             track.style.transition = 'none';
             track.style.transform = 'translateX(0)';
             track.innerHTML = '';
@@ -220,8 +237,7 @@
                 const itemW = 100;
                 const winIdx = 50; 
                 const containerW = document.getElementById('roll-wrap').offsetWidth;
-                // Смещение с учетом линии на 53%
-                const shift = (winIdx * itemW) + (itemW / 2) - (containerW * 0.53);
+                const shift = (winIdx * itemW) + (itemW / 2) - (containerW * 0.5);
                 track.style.transform = `translateX(-${shift}px)`;
                 
                 setTimeout(() => {
@@ -229,27 +245,26 @@
                     score += win; save();
                     document.getElementById('case-title').innerText = `ВЫИГРЫШ: ${win}`;
                     claim.style.display = 'block';
+                    // Возвращаем анимацию после выигрыша
+                    hb.style.animation = 'moveSide 2s ease-in-out infinite';
                 }, 4100);
             }, 50);
         };
 
-        // ПОДАРОК
         document.getElementById('btn-gift').onclick = () => {
             const today = new Date().toDateString();
             if(lastGift !== today) {
                 score += 2500;
                 lastGift = today;
                 save();
-                tg.showAlert("Вы получили бонус: 2500 монет! Прилетайте завтра.");
+                tg.showAlert("Вы получили бонус: 2500 монет!");
             }
         };
 
-        // ЛИДЕРБОРД
         document.getElementById('btn-top').onclick = () => {
             document.getElementById('modal-top').style.display = 'flex';
             const list = document.getElementById('top-list');
             list.innerHTML = "Загрузка...";
-            
             db.ref('leaderboard').orderByChild('score').limitToLast(15).on('value', (snap) => {
                 list.innerHTML = "";
                 let players = [];
