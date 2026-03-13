@@ -7,40 +7,35 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        :root { --bg: #000; --orange: #ff9f00; --blue: #007aff; --purple: #af52de; --gray: #2c2c2e; --red: #ff3b30; }
+        :root { --bg: #000; --orange: #ff9f00; --blue: #007aff; --purple: #af52de; --gray: #2c2c2e; --red: #ff3b30; --green: #34c759; }
         body { background: var(--bg); color: white; font-family: -apple-system, sans-serif; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; -webkit-user-select: none; }
 
         #header { padding-top: env(safe-area-inset-top); height: 110px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
         #score { font-size: 50px; font-weight: 900; color: var(--orange); text-shadow: 0 0 20px rgba(255,159,0,0.5); }
-        #stats { font-size: 14px; color: #888; }
-
+        
         #game-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; position: relative; }
         #rocket { width: 180px; height: 180px; background: radial-gradient(circle, #ffb300, #ff8c00); border-radius: 50%; border: 6px solid #fff; font-size: 80px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 50px rgba(255,159,0,0.6); transition: transform 0.05s; z-index: 10; touch-action: manipulation; }
         #rocket:active { transform: scale(0.85); }
 
-        .pop { position: absolute; font-size: 35px; font-weight: 900; color: white; pointer-events: none; animation: fly 0.6s ease-out forwards; z-index: 20; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+        .pop { position: absolute; font-size: 35px; font-weight: 900; color: white; pointer-events: none; animation: fly 0.6s ease-out forwards; z-index: 20; }
         @keyframes fly { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-150px) scale(1.2); opacity: 0; } }
 
         #footer { background: #1c1c1e; padding: 15px 15px calc(20px + env(safe-area-inset-bottom)); border-radius: 30px 30px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border-top: 1px solid #333; }
-        .btn { height: 52px; border: none; border-radius: 16px; font-weight: bold; font-size: 14px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; }
-        .btn:disabled { opacity: 0.4; pointer-events: none; }
+        .btn { height: 50px; border: none; border-radius: 14px; font-weight: bold; font-size: 13px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; text-transform: uppercase; }
+        .btn:disabled { opacity: 0.3; }
         
-        #btn-upd { background: #1c1c1e; border: 1px solid var(--blue); color: var(--blue); }
-        #btn-case { background: #1c1c1e; border: 1px solid var(--purple); color: var(--purple); }
-        #btn-gift { background: #1c1c1e; border: 1px solid var(--orange); color: var(--orange); }
-        #btn-top { background: #1c1c1e; border: 1px solid #fff; color: #fff; }
-        #btn-sets { background: var(--gray); grid-column: span 2; }
+        #btn-upd { background: #2c2c2e; border: 1px solid var(--blue); color: var(--blue); }
+        #btn-case { background: #2c2c2e; border: 1px solid var(--purple); color: var(--purple); }
+        #btn-ref { background: #2c2c2e; border: 1px solid var(--green); color: var(--green); }
+        #btn-top { background: #2c2c2e; border: 1px solid #fff; color: #fff; }
+        #btn-gift { background: var(--orange); grid-column: span 2; color: #000; }
+        #btn-sets { background: #1c1c1e; grid-column: span 2; color: #666; font-size: 10px; height: 30px; }
 
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        .modal-box { width: 100%; max-width: 380px; background: #1c1c1e; border-radius: 20px; padding: 25px; box-sizing: border-box; text-align: center; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .modal-box { width: 100%; max-width: 350px; background: #1c1c1e; border-radius: 24px; padding: 25px; box-sizing: border-box; text-align: center; border: 1px solid #333; }
 
-        #roll-wrap { width: 100%; height: 90px; border: 1px solid #444; margin: 25px 0; overflow: hidden; position: relative; background: #000; border-radius: 10px; }
-        #roll-track { display: flex; position: absolute; left: 0; height: 100%; transition: transform 4s cubic-bezier(0.1, 0, 0.1, 1); }
-        .item { min-width: 100px; width: 100px; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 24px; border-right: 1px solid #222; box-sizing: border-box; }
-        #hitbox { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: var(--red); transform: translateX(-50%); z-index: 50; box-shadow: 0 0 10px var(--red); }
-
-        #top-list { margin: 20px 0; max-height: 250px; overflow-y: auto; text-align: left; background: #000; border-radius: 10px; padding: 10px; }
-        .row { display: flex; justify-content: space-between; padding: 12px 5px; border-bottom: 1px solid #2c2c2e; font-size: 15px; }
+        #top-list { margin: 15px 0; max-height: 200px; overflow-y: auto; background: #111; border-radius: 12px; padding: 5px; }
+        .row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #222; font-size: 14px; }
     </style>
 </head>
 <body onclick="startAudio()">
@@ -49,47 +44,47 @@
 
     <div id="header">
         <div id="score">0</div>
-        <div id="stats">За тап: <b id="val-pwr">+1</b></div>
+        <div style="color:#888; font-size:12px;">СИЛА ТАПА: <span id="val-pwr">1</span></div>
     </div>
 
     <div id="game-area"><div id="rocket">🚀</div></div>
 
     <div id="footer">
-        <button id="btn-upd" class="btn">Улучшить (50)</button>
-        <button id="btn-case" class="btn">Кейс (350)</button>
-        <button id="btn-gift" class="btn">🎁 Подарок</button>
+        <button id="btn-upd" class="btn">ПРОКАЧКА</button>
+        <button id="btn-case" class="btn">КЕЙС (350)</button>
+        <button id="btn-ref" class="btn">👥 ДРУЗЬЯ</button>
         <button id="btn-top" class="btn">🏆 ТОП</button>
-        <button id="btn-sets" class="btn">⚙️ НАСТРОЙКИ</button>
+        <button id="btn-gift" class="btn">🎁 ЗАБРАТЬ ПОДАРОК</button>
+        <button id="btn-sets" class="btn">НАСТРОЙКИ ⚙️</button>
     </div>
 
-    <div id="modal-case" class="modal">
+    <div id="modal-ref" class="modal">
         <div class="modal-box">
-            <h2 id="case-title" style="margin:0; color:var(--purple);">ВЫИГРЫШ: ...</h2>
-            <div id="roll-wrap">
-                <div id="hitbox"></div>
-                <div id="roll-track"></div>
-            </div>
-            <button id="btn-claim" class="btn" style="display:none; width:100%; background:var(--blue);">ЗАБРАТЬ</button>
+            <h2 style="color:var(--green)">Друзья</h2>
+            <p style="font-size:14px; color:#aaa;">Пригласи друга и получи <br><b style="color:white;">+5,000 монет!</b></p>
+            <button id="share-link" class="btn" style="width:100%; background:var(--green); margin-bottom:10px;">ПРИГЛАСИТЬ</button>
+            <button onclick="closeModal('modal-ref')" class="btn" style="width:100%; background:var(--gray);">ЗАКРЫТЬ</button>
         </div>
     </div>
 
     <div id="modal-top" class="modal">
         <div class="modal-box">
-            <h2>🏆 Топ Пилотов</h2>
-            <div id="top-list">Загрузка данных...</div>
-            <button onclick="closeModal('modal-top')" class="btn" style="width:100%; background:var(--gray); margin-top: 10px;">ЗАКРЫТЬ</button>
+            <h2>🏆 ТОП-10</h2>
+            <div id="top-list">Загрузка...</div>
+            <button onclick="closeModal('modal-top')" class="btn" style="width:100%; background:var(--gray);">ЗАКРЫТЬ</button>
         </div>
     </div>
 
     <div id="modal-sets" class="modal">
         <div class="modal-box">
             <h2>Настройки</h2>
-            <button id="toggle-mu" class="btn" style="width:100%; background:var(--blue); margin-bottom:15px;">МУЗЫКА: ВКЛ</button>
+            <button id="toggle-mu" class="btn" style="width:100%; background:var(--blue); margin-bottom:10px;">МУЗЫКА: ВКЛ</button>
             <button onclick="closeModal('modal-sets')" class="btn" style="width:100%; background:var(--gray);">ЗАКРЫТЬ</button>
         </div>
     </div>
 
     <script>
+        // Конфиг Firebase (используем твой)
         const firebaseConfig = {
             apiKey: "AIzaSyAhFyYz8tC0VZqNKQweM1VH7A9rzcLQ7L4",
             authDomain: "rockettap-22e98.firebaseapp.com",
@@ -99,150 +94,91 @@
             messagingSenderId: "800263373343",
             appId: "1:800263373343:web:ed6db2e822f61d8257cb2a"
         };
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        let score = Number(localStorage.getItem('rk_sc')) || 0;
-        let pwr = Number(localStorage.getItem('rk_pw')) || 1;
-        let cost = Number(localStorage.getItem('rk_ct')) || 50;
-        let lastGift = localStorage.getItem('rk_gift') || "";
+        let score = Number(localStorage.getItem('v5_sc')) || 0;
+        let pwr = Number(localStorage.getItem('v5_pw')) || 1;
+        let cost = Number(localStorage.getItem('v5_ct')) || 50;
+        let lastGift = localStorage.getItem('v5_gift') || "";
         let musicOn = true;
-        let audioStarted = false;
+
+        const uid = tg.initDataUnsafe?.user?.id || "local_user";
+        const name = tg.initDataUnsafe?.user?.first_name || "Пилот";
+
+        // ЛОГИКА РЕФЕРАЛОВ
+        // В Telegram ссылка выглядит так: t.me/название_бота?start=твой_id
+        const botUsername = "RocketTapBot"; // ЗАМЕНИ НА ЮЗЕРНЕЙМ СВОЕГО БОТА БЕЗ @
+        const refLink = `https://t.me/${botUsername}?start=${uid}`;
 
         function save() {
-            localStorage.setItem('rk_sc', score);
-            localStorage.setItem('rk_pw', pwr);
-            localStorage.setItem('rk_ct', cost);
-            localStorage.setItem('rk_gift', lastGift);
-            
-            const uid = tg.initDataUnsafe?.user?.id || "player_local";
-            const name = tg.initDataUnsafe?.user?.first_name || "Пилот";
-            
-            // Сохранение в Firebase
-            db.ref('leaderboard/' + uid).set({ 
-                name: name, 
-                score: Math.floor(score) 
-            });
+            localStorage.setItem('v5_sc', score);
+            localStorage.setItem('v5_pw', pwr);
+            localStorage.setItem('v5_ct', cost);
+            localStorage.setItem('v5_gift', lastGift);
+            db.ref('leaderboard/' + uid).set({ name: name, score: Math.floor(score) });
             updateUI();
         }
 
         function updateUI() {
             document.getElementById('score').innerText = Math.floor(score).toLocaleString('ru-RU');
-            document.getElementById('val-pwr').innerText = "+" + pwr;
-            document.getElementById('btn-upd').innerText = `Улучшить (${cost})`;
+            document.getElementById('val-pwr').innerText = pwr;
+            document.getElementById('btn-upd').innerText = `ПРОКАЧКА (${cost})`;
             document.getElementById('btn-upd').disabled = score < cost;
             document.getElementById('btn-case').disabled = score < 350;
             const today = new Date().toDateString();
             document.getElementById('btn-gift').disabled = (lastGift === today);
-            document.getElementById('btn-gift').innerText = (lastGift === today) ? "Взято ✅" : "🎁 Подарок";
         }
 
-        function handleTap(x, y) {
+        // Тапы
+        document.getElementById('rocket').onclick = (e) => {
             score += pwr;
             const p = document.createElement('div');
             p.className = 'pop'; p.innerText = `+${pwr}`;
-            p.style.left = (x - 20) + 'px'; p.style.top = (y - 20) + 'px';
+            p.style.left = e.clientX + 'px'; p.style.top = e.clientY + 'px';
             document.body.appendChild(p);
             setTimeout(() => p.remove(), 600);
             tg.HapticFeedback.impactOccurred('medium');
             save();
-        }
-
-        document.getElementById('rocket').addEventListener('touchstart', (e) => handleTap(e.touches[0].clientX, e.touches[0].clientY));
-        document.getElementById('rocket').addEventListener('mousedown', (e) => handleTap(e.clientX, e.clientY));
-
-        document.getElementById('btn-upd').onclick = () => {
-            if(score >= cost) { score -= cost; pwr++; cost = Math.round(cost * 1.5); save(); }
         };
 
-        const prizesWithWeights = [
-            {v: 50, w: 60}, {v: 100, w: 30}, {v: 500, w: 7}, 
-            {v: 1000, w: 2}, {v: 5000, w: 0.8}, {v: 10000, w: 0.2}
-        ];
-
-        function getRandomPrize() {
-            let totalWeight = prizesWithWeights.reduce((sum, p) => sum + p.w, 0);
-            let rnd = Math.random() * totalWeight;
-            for (let p of prizesWithWeights) { if (rnd < p.w) return p.v; rnd -= p.w; }
-            return 50;
-        }
-
-        document.getElementById('btn-case').onclick = () => {
-            if(score < 350) return;
-            score -= 350; save();
-            const modal = document.getElementById('modal-case');
-            const track = document.getElementById('roll-track');
-            const title = document.getElementById('case-title');
-            modal.style.display = 'flex';
-            document.getElementById('btn-claim').style.display = 'none';
-            title.innerText = "КРУТИМ...";
-            track.style.transition = 'none';
-            track.style.transform = 'translateX(0)';
-            track.innerHTML = '';
-            
-            let itemsArray = [];
-            const winIdx = 45; 
-            for(let i = 0; i < 60; i++) {
-                let v = (i === winIdx) ? getRandomPrize() : prizesWithWeights[Math.floor(Math.random() * prizesWithWeights.length)].v;
-                itemsArray.push(v);
-                let col = v >= 5000 ? '#ff9f00' : (v >= 500 ? '#007aff' : '#fff');
-                track.innerHTML += `<div class="item" style="color:${col}">${v}</div>`;
-            }
-
-            setTimeout(() => {
-                track.style.transition = 'transform 4s cubic-bezier(0.1, 0, 0.1, 1)';
-                const itemW = 100; const wrapW = document.getElementById('roll-wrap').offsetWidth;
-                const shift = (winIdx * itemW) + (itemW / 2) - (wrapW / 2);
-                track.style.transform = `translateX(-${shift}px)`;
-                setTimeout(() => {
-                    let win = itemsArray[winIdx]; score += win; save();
-                    title.innerText = `ВЫИГРЫШ: ${win}`;
-                    document.getElementById('btn-claim').style.display = 'block';
-                }, 4100);
-            }, 50);
-        };
-
-        document.getElementById('btn-gift').onclick = () => {
-            const today = new Date().toDateString();
-            if(lastGift !== today) { score += 2500; lastGift = today; save(); tg.showAlert("Бонус +2500!"); }
-        };
-
-        // ИСПРАВЛЕННЫЙ ЛИДЕРБОРД
+        // Кнопки меню
+        document.getElementById('btn-upd').onclick = () => { if(score>=cost){score-=cost; pwr++; cost=Math.round(cost*1.6); save();} };
+        document.getElementById('btn-ref').onclick = () => document.getElementById('modal-ref').style.display='flex';
         document.getElementById('btn-top').onclick = () => {
-            document.getElementById('modal-top').style.display = 'flex';
-            const listDiv = document.getElementById('top-list');
-            listDiv.innerHTML = "Загрузка...";
-
-            db.ref('leaderboard').orderByChild('score').limitToLast(10).once('value').then((snap) => {
-                listDiv.innerHTML = "";
-                if (!snap.exists()) {
-                    listDiv.innerHTML = "<center>Список пока пуст</center>";
-                    return;
-                }
-                let players = [];
-                snap.forEach(c => { players.push(c.val()); });
-                players.reverse().forEach((p, i) => {
-                    listDiv.innerHTML += `<div class="row"><span>${i+1}. ${p.name}</span><b>${p.score.toLocaleString('ru-RU')}</b></div>`;
+            document.getElementById('modal-top').style.display='flex';
+            db.ref('leaderboard').orderByChild('score').limitToLast(10).once('value', s => {
+                let html = ""; let arr = [];
+                s.forEach(child => arr.push(child.val()));
+                arr.reverse().forEach((p, i) => {
+                    html += `<div class="row"><span>${i+1}. ${p.name}</span><b>${p.score.toLocaleString()}</b></div>`;
                 });
-            }).catch(e => {
-                listDiv.innerHTML = "<center>Ошибка доступа</center>";
-                console.error(e);
+                document.getElementById('top-list').innerHTML = html;
             });
         };
+        document.getElementById('btn-gift').onclick = () => {
+            score += 2500; lastGift = new Date().toDateString(); save();
+            tg.showAlert("Вы получили ежедневный бонус 2,500!");
+        };
+        document.getElementById('btn-sets').onclick = () => document.getElementById('modal-sets').style.display='flex';
 
-        document.getElementById('btn-sets').onclick = () => document.getElementById('modal-sets').style.display = 'flex';
-        document.getElementById('toggle-mu').onclick = function() {
-            musicOn = !musicOn; const audio = document.getElementById('bg-music');
-            if(musicOn) audio.play(); else audio.pause();
-            this.innerText = `МУЗЫКА: ${musicOn ? 'ВКЛ' : 'ВЫКЛ'}`;
-            this.style.background = musicOn ? 'var(--blue)' : 'var(--red)';
+        // Шаринг ссылки
+        document.getElementById('share-link').onclick = () => {
+            const text = encodeURIComponent(`🚀 Присоединяйся к RocketTap! Стань лучшим пилотом и получи бонус!`);
+            window.open(`https://t.me/share/url?url=${refLink}&text=${text}`);
         };
 
-        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-        document.getElementById('btn-claim').onclick = () => closeModal('modal-case');
-        function startAudio() { if(!audioStarted && musicOn) { document.getElementById('bg-music').play().then(()=>audioStarted=true).catch(()=>{}); } }
+        // Настройки музыки
+        document.getElementById('toggle-mu').onclick = function() {
+            musicOn = !musicOn; const mu = document.getElementById('bg-music');
+            if(musicOn) mu.play(); else mu.pause();
+            this.innerText = `МУЗЫКА: ${musicOn?'ВКЛ':'ВЫКЛ'}`;
+        };
+
+        function closeModal(id) { document.getElementById(id).style.display='none'; }
+        function startAudio() { if(musicOn) document.getElementById('bg-music').play().catch(()=>{}); }
         updateUI();
     </script>
 </body>
