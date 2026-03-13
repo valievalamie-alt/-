@@ -18,32 +18,29 @@
         #rocket { width: 180px; height: 180px; background: radial-gradient(circle, #ffb300, #ff8c00); border-radius: 50%; border: 6px solid #fff; font-size: 80px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 50px rgba(255,159,0,0.6); transition: transform 0.05s; z-index: 10; touch-action: manipulation; }
         #rocket:active { transform: scale(0.85); }
 
-        .pop { position: absolute; font-size: 35px; font-weight: 900; color: white; pointer-events: none; animation: fly 0.6s ease-out forwards; z-index: 20; }
-        @keyframes fly { 0% { transform: translateY(0); opacity: 1; } 100% { transform: translateY(-150px); opacity: 0; } }
+        .pop { position: absolute; font-size: 35px; font-weight: 900; color: white; pointer-events: none; animation: fly 0.6s ease-out forwards; z-index: 20; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+        @keyframes fly { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-150px) scale(1.2); opacity: 0; } }
 
         #footer { background: #1c1c1e; padding: 15px 15px calc(20px + env(safe-area-inset-bottom)); border-radius: 30px 30px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border-top: 1px solid #333; }
         .btn { height: 52px; border: none; border-radius: 16px; font-weight: bold; font-size: 14px; color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; }
-        .btn:disabled { opacity: 0.3; pointer-events: none; }
+        .btn:disabled { opacity: 0.4; pointer-events: none; }
         
-        #btn-upd { background: var(--blue); }
-        #btn-case { background: var(--purple); }
-        #btn-gift { background: #fff; color: #000; }
-        #btn-top { background: var(--gray); }
-        #btn-sets { background: #3a3a3c; grid-column: span 2; margin-top: 5px; }
+        #btn-upd { background: #1c1c1e; border: 1px solid var(--blue); color: var(--blue); }
+        #btn-case { background: #1c1c1e; border: 1px solid var(--purple); color: var(--purple); }
+        #btn-gift { background: #1c1c1e; border: 1px solid var(--orange); color: var(--orange); }
+        #btn-top { background: #1c1c1e; border: 1px solid #fff; color: #fff; }
+        #btn-sets { background: var(--gray); grid-column: span 2; }
 
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        .modal-box { width: 100%; max-width: 380px; background: #1c1c1e; border-radius: 25px; padding: 25px; box-sizing: border-box; text-align: center; border: 1px solid #444; }
+        .modal-box { width: 100%; max-width: 380px; background: #1c1c1e; border-radius: 20px; padding: 25px; box-sizing: border-box; text-align: center; }
 
-        /* Рулетка */
-        #roll-wrap { width: 100%; height: 100px; border: 2px solid #555; margin: 25px 0; overflow: hidden; position: relative; background: #000; border-radius: 15px; }
+        #roll-wrap { width: 100%; height: 90px; border: 1px solid #444; margin: 25px 0; overflow: hidden; position: relative; background: #000; border-radius: 10px; }
         #roll-track { display: flex; position: absolute; left: 0; height: 100%; transition: transform 4s cubic-bezier(0.1, 0, 0.1, 1); }
-        .item { min-width: 100px; width: 100px; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 26px; border-right: 1px solid #222; box-sizing: border-box; }
-        
-        #hitbox { position: absolute; left: 50%; top: 0; bottom: 0; width: 3px; background: var(--red); transform: translateX(-50%); z-index: 50; box-shadow: 0 0 20px var(--red); }
-        #hitbox::after { content: '▼'; position: absolute; top: -15px; left: -8px; color: var(--red); }
+        .item { min-width: 100px; width: 100px; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 24px; border-right: 1px solid #222; box-sizing: border-box; }
+        #hitbox { position: absolute; left: 50%; top: 0; bottom: 0; width: 2px; background: var(--red); transform: translateX(-50%); z-index: 50; box-shadow: 0 0 10px var(--red); }
 
-        #top-list { margin: 20px 0; max-height: 250px; overflow-y: auto; text-align: left; }
-        .row { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #2c2c2e; }
+        #top-list { margin: 20px 0; max-height: 250px; overflow-y: auto; text-align: left; background: #000; border-radius: 10px; padding: 10px; }
+        .row { display: flex; justify-content: space-between; padding: 12px 5px; border-bottom: 1px solid #2c2c2e; font-size: 15px; }
     </style>
 </head>
 <body onclick="startAudio()">
@@ -67,7 +64,7 @@
 
     <div id="modal-case" class="modal">
         <div class="modal-box">
-            <h2 id="case-title" style="margin:0; color:var(--purple);">ОТКРЫТИЕ...</h2>
+            <h2 id="case-title" style="margin:0; color:var(--purple);">ВЫИГРЫШ: ...</h2>
             <div id="roll-wrap">
                 <div id="hitbox"></div>
                 <div id="roll-track"></div>
@@ -78,7 +75,7 @@
 
     <div id="modal-top" class="modal">
         <div class="modal-box">
-            <h2>🏆 ТОП Пилотов</h2>
+            <h2>🏆 Топ Пилотов</h2>
             <div id="top-list">Загрузка...</div>
             <button onclick="closeModal('modal-top')" class="btn" style="width:100%; background:var(--gray);">ЗАКРЫТЬ</button>
         </div>
@@ -102,107 +99,100 @@
             messagingSenderId: "800263373343",
             appId: "1:800263373343:web:ed6db2e822f61d8257cb2a"
         };
-        firebase.initializeApp(firebaseConfig);
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        let score = Number(localStorage.getItem('tap_sc_v5')) || 0;
-        let pwr = Number(localStorage.getItem('tap_pw_v5')) || 1;
-        let cost = Number(localStorage.getItem('tap_ct_v5')) || 50;
-        let lastGift = localStorage.getItem('tap_gift_v5') || "";
+        let score = Number(localStorage.getItem('rk_sc')) || 0;
+        let pwr = Number(localStorage.getItem('rk_pw')) || 1;
+        let cost = Number(localStorage.getItem('rk_ct')) || 50;
+        let lastGift = localStorage.getItem('rk_gift') || "";
         let musicOn = true;
+        let audioStarted = false;
 
         function save() {
-            localStorage.setItem('tap_sc_v5', score);
-            localStorage.setItem('tap_pw_v5', pwr);
-            localStorage.setItem('tap_ct_v5', cost);
-            localStorage.setItem('tap_gift_v5', lastGift);
+            localStorage.setItem('rk_sc', score);
+            localStorage.setItem('rk_pw', pwr);
+            localStorage.setItem('rk_ct', cost);
+            localStorage.setItem('rk_gift', lastGift);
             const uid = tg.initDataUnsafe?.user?.id || "player";
             db.ref('leaderboard/' + uid).set({ name: tg.initDataUnsafe?.user?.first_name || "Пилот", score: Math.floor(score) });
             updateUI();
         }
 
         function updateUI() {
-            document.getElementById('score').innerText = Math.floor(score).toLocaleString('ru-RU');
+            document.getElementById('score').innerText = Math.floor(score).toLocaleString();
             document.getElementById('val-pwr').innerText = "+" + pwr;
             document.getElementById('btn-upd').innerText = `Улучшить (${cost})`;
             document.getElementById('btn-upd').disabled = score < cost;
             document.getElementById('btn-case').disabled = score < 350;
             const today = new Date().toDateString();
             document.getElementById('btn-gift').disabled = (lastGift === today);
+            document.getElementById('btn-gift').innerText = (lastGift === today) ? "Взято ✅" : "🎁 Подарок";
         }
 
-        // КЛИКЕР
         function handleTap(x, y) {
             score += pwr;
             const p = document.createElement('div');
             p.className = 'pop'; p.innerText = `+${pwr}`;
-            p.style.left = x + 'px'; p.style.top = y + 'px';
+            p.style.left = (x - 20) + 'px'; p.style.top = (y - 20) + 'px';
             document.body.appendChild(p);
             setTimeout(() => p.remove(), 600);
-            tg.HapticFeedback.impactOccurred('light');
+            tg.HapticFeedback.impactOccurred('medium');
             save();
         }
-        document.getElementById('rocket').onclick = (e) => handleTap(e.clientX, e.clientY);
+
+        document.getElementById('rocket').addEventListener('touchstart', (e) => handleTap(e.touches[0].clientX, e.touches[0].clientY));
+        document.getElementById('rocket').addEventListener('mousedown', (e) => handleTap(e.clientX, e.clientY));
 
         document.getElementById('btn-upd').onclick = () => {
-            if(score >= cost) { score -= cost; pwr++; cost = Math.round(cost * 1.6); save(); }
+            if(score >= cost) { score -= cost; pwr++; cost = Math.round(cost * 1.5); save(); }
         };
 
-        // ШАНСЫ (ВЕСА)
-        // 50 выпадает в 60 раз чаще, чем 10000
-        const rewards = [
-            {v: 10000, w: 1}, 
-            {v: 5000, w: 3}, 
-            {v: 1000, w: 10}, 
-            {v: 500, w: 25}, 
-            {v: 100, w: 50}, 
-            {v: 50, w: 80}
+        // --- ЛОГИКА КЕЙСА С ШАНСАМИ ---
+        const prizesWithWeights = [
+            {v: 50, w: 60}, {v: 100, w: 30}, {v: 500, w: 7}, 
+            {v: 1000, w: 2}, {v: 5000, w: 0.8}, {v: 10000, w: 0.2}
         ];
 
         function getRandomPrize() {
-            let totalW = rewards.reduce((s, r) => s + r.w, 0);
-            let rnd = Math.random() * totalW;
-            for (let r of rewards) { if(rnd < r.w) return r.v; rnd -= r.w; }
+            let totalWeight = prizesWithWeights.reduce((sum, p) => sum + p.w, 0);
+            let rnd = Math.random() * totalWeight;
+            for (let p of prizesWithWeights) { if (rnd < p.w) return p.v; rnd -= p.w; }
             return 50;
         }
 
-        // КЕЙС
         document.getElementById('btn-case').onclick = () => {
             if(score < 350) return;
             score -= 350; save();
             const modal = document.getElementById('modal-case');
             const track = document.getElementById('roll-track');
+            const title = document.getElementById('case-title');
             modal.style.display = 'flex';
             document.getElementById('btn-claim').style.display = 'none';
+            title.innerText = "КРУТИМ...";
             track.style.transition = 'none';
             track.style.transform = 'translateX(0)';
             track.innerHTML = '';
             
-            let items = [];
-            for(let i=0; i<60; i++) {
-                let v = getRandomPrize();
-                items.push(v);
-                let col = v >= 5000 ? '#ff9f00' : (v >= 500 ? '#af52de' : '#007aff');
+            let itemsArray = [];
+            const winIdx = 45; 
+            for(let i = 0; i < 60; i++) {
+                let v = (i === winIdx) ? getRandomPrize() : prizesWithWeights[Math.floor(Math.random() * prizesWithWeights.length)].v;
+                itemsArray.push(v);
+                let col = v >= 5000 ? '#ff9f00' : (v >= 500 ? '#007aff' : '#fff');
                 track.innerHTML += `<div class="item" style="color:${col}">${v}</div>`;
             }
 
             setTimeout(() => {
                 track.style.transition = 'transform 4s cubic-bezier(0.1, 0, 0.1, 1)';
-                const itemW = 100;
-                const winIdx = 45; 
-                const wrapW = document.getElementById('roll-wrap').offsetWidth;
-                
-                // Центрируем выигрышный блок ровно по красной линии
-                const finalShift = (winIdx * itemW) + (itemW / 2) - (wrapW / 2);
-                
-                track.style.transform = `translateX(-${finalShift}px)`;
-                
+                const itemW = 100; const wrapW = document.getElementById('roll-wrap').offsetWidth;
+                const shift = (winIdx * itemW) + (itemW / 2) - (wrapW / 2);
+                track.style.transform = `translateX(-${shift}px)`;
                 setTimeout(() => {
-                    let win = items[winIdx];
-                    score += win; save();
-                    document.getElementById('case-title').innerText = `ВЫИГРЫШ: ${win}`;
+                    let win = itemsArray[winIdx]; score += win; save();
+                    title.innerText = `ВЫИГРЫШ: ${win}`;
                     document.getElementById('btn-claim').style.display = 'block';
                 }, 4100);
             }, 50);
@@ -215,24 +205,25 @@
 
         document.getElementById('btn-top').onclick = () => {
             document.getElementById('modal-top').style.display = 'flex';
-            db.ref('leaderboard').orderByChild('score').limitToLast(10).on('value', s => {
-                let h = ""; let r = []; s.forEach(x => r.push(x.val()));
-                r.reverse().forEach((p, i) => h += `<div class="row"><span>${i+1}. ${p.name}</span><b>${p.score}</b></div>`);
-                document.getElementById('top-list').innerHTML = h;
+            db.ref('leaderboard').orderByChild('score').limitToLast(10).on('value', (snap) => {
+                let html = ""; let players = [];
+                snap.forEach(c => players.push(c.val()));
+                players.reverse().forEach((p, i) => { html += `<div class="row"><span>${i+1}. ${p.name}</span><b>${p.score.toLocaleString()}</b></div>`; });
+                document.getElementById('top-list').innerHTML = html;
             });
         };
 
         document.getElementById('btn-sets').onclick = () => document.getElementById('modal-sets').style.display = 'flex';
         document.getElementById('toggle-mu').onclick = function() {
-            musicOn = !musicOn;
-            const a = document.getElementById('bg-music');
-            if(musicOn) a.play(); else a.pause();
+            musicOn = !musicOn; const audio = document.getElementById('bg-music');
+            if(musicOn) audio.play(); else audio.pause();
             this.innerText = `МУЗЫКА: ${musicOn ? 'ВКЛ' : 'ВЫКЛ'}`;
+            this.style.background = musicOn ? 'var(--blue)' : 'var(--red)';
         };
 
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         document.getElementById('btn-claim').onclick = () => closeModal('modal-case');
-        function startAudio() { if(musicOn) document.getElementById('bg-music').play().catch(()=>{}); }
+        function startAudio() { if(!audioStarted && musicOn) { document.getElementById('bg-music').play().then(()=>audioStarted=true).catch(()=>{}); } }
         updateUI();
     </script>
 </body>
