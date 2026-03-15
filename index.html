@@ -12,42 +12,47 @@
 
         /* МЕНЮ */
         #main-menu { position: fixed; inset: 0; background: radial-gradient(circle at center, #1c1c1e, #000); z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.3s; }
-        .menu-btn { width: 250px; height: 60px; margin: 10px; border-radius: 20px; border: 1px solid var(--holy); background: rgba(255,207,64,0.1); color: var(--holy); font-size: 18px; font-weight: bold; cursor: pointer; touch-action: manipulation; }
-        .btn-play { background: var(--holy); color: black; }
+        .menu-btn { width: 250px; height: 54px; margin: 8px; border-radius: 18px; border: 1px solid var(--holy); background: rgba(255,207,64,0.1); color: var(--holy); font-size: 16px; font-weight: bold; cursor: pointer; touch-action: manipulation; }
+        .btn-play { background: var(--holy); color: black; height: 65px; font-size: 20px; }
 
-        #header { padding-top: env(safe-area-inset-top); height: 120px; text-align: center; display: flex; flex-direction: column; justify-content: center; background: linear-gradient(to bottom, rgba(255,207,64,0.15), transparent); position: relative; z-index: 10; }
-        #score { font-size: 54px; font-weight: 900; color: var(--holy); text-shadow: 0 0 30px rgba(255,207,64,0.4); letter-spacing: -1px; }
+        #header { padding-top: env(safe-area-inset-top); height: 130px; text-align: center; display: flex; flex-direction: column; justify-content: center; background: linear-gradient(to bottom, rgba(255,207,64,0.15), transparent); position: relative; z-index: 10; }
+        #score { font-size: 54px; font-weight: 900; color: var(--holy); text-shadow: 0 0 30px rgba(255,207,64,0.4); letter-spacing: -1px; transition: color 0.3s; }
+        #score.x2-active { color: var(--blue); text-shadow: 0 0 30px var(--blue); }
         #stats { font-size: 14px; color: #8e8e93; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; }
 
         #game-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; position: relative; z-index: 5; }
-        #halo { width: 190px; height: 190px; background: radial-gradient(circle at 30% 30%, #fff, var(--holy)); border-radius: 50%; border: 8px solid rgba(255,255,255,0.3); font-size: 90px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 60px rgba(255,207,64,0.5); transition: transform 0.05s; touch-action: manipulation; }
+        #halo { width: 200px; height: 200px; background: radial-gradient(circle at 30% 30%, #fff, var(--holy)); border-radius: 50%; border: 8px solid rgba(255,255,255,0.3); font-size: 90px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 60px rgba(255,207,64,0.5); transition: transform 0.05s; touch-action: manipulation; }
         #halo:active { transform: scale(0.92); }
 
         .pop { position: absolute; font-size: 38px; font-weight: 900; color: white; pointer-events: none; animation: fly 0.7s ease-out forwards; z-index: 20; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .pop.blue { color: var(--blue); }
         @keyframes fly { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-180px) scale(1.3); opacity: 0; } }
 
-        #footer { background: rgba(28, 28, 30, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 20px 15px calc(25px + env(safe-area-inset-bottom)); border-radius: 35px 35px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border-top: 1px solid rgba(255,255,255,0.1); position: relative; z-index: 100; }
-        .btn { height: 56px; border: none; border-radius: 18px; font-weight: 700; font-size: 14px; color: white; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: background 0.2s, transform 0.1s; -webkit-tap-highlight-color: transparent; line-height: 1.2; touch-action: manipulation; }
-        .btn span { font-size: 10px; opacity: 0.7; font-weight: 400; margin-top: 2px; }
+        #footer { background: rgba(28, 28, 30, 0.8); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); padding: 15px 15px calc(25px + env(safe-area-inset-bottom)); border-radius: 35px 35px 0 0; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; border-top: 1px solid rgba(255,255,255,0.1); position: relative; z-index: 100; }
+        .btn { height: 50px; border: none; border-radius: 15px; font-weight: 700; font-size: 12px; color: white; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: background 0.2s, transform 0.1s; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
+        .btn span { font-size: 9px; opacity: 0.7; margin-top: 2px; }
         .btn:active { transform: scale(0.96); }
         .btn:disabled { opacity: 0.3; filter: grayscale(1); }
         
-        #btn-upd { background: var(--glass); border: 1px solid var(--blue); color: var(--blue); }
+        #btn-upd { background: var(--glass); border: 1px solid var(--blue); color: var(--blue); grid-column: span 1; }
         #btn-case { background: var(--glass); border: 1px solid var(--purple); color: var(--purple); }
-        #btn-friends { background: var(--glass); border: 1px solid var(--orange); color: var(--orange); }
         #btn-top { background: var(--glass); border: 1px solid #fff; color: #fff; }
-        #btn-gift { background: #1c1c1e; grid-column: span 1; border: 1px solid #333; }
-        #btn-sets { background: #1c1c1e; border: 1px solid #333; font-size: 20px; }
+        #btn-gift { background: #1c1c1e; border: 1px solid #333; }
+        #btn-friends { background: #1c1c1e; border: 1px solid #333; }
+        #btn-sets { background: #1c1c1e; border: 1px solid #333; font-size: 18px; }
 
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 2000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        .modal-box { width: 100%; max-width: 360px; background: #1c1c1e; border-radius: 30px; padding: 30px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); z-index: 2000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .modal-box { width: 100%; max-width: 360px; background: #1c1c1e; border-radius: 30px; padding: 30px; border: 1px solid rgba(255,255,255,0.1); text-align: center; box-sizing: border-box; }
         
+        /* КЕЙС */
+        #case-anim { font-size: 80px; margin: 20px; transition: transform 0.5s cubic-bezier(.17,.67,.83,.67); }
+        .shake { animation: shake 0.5s infinite; }
+        @keyframes shake { 0% { transform: rotate(0); } 25% { transform: rotate(5deg); } 75% { transform: rotate(-5deg); } 100% { transform: rotate(0); } }
+
+        /* КОЛЕСО */
         #wheel-container { position: relative; width: 260px; height: 260px; margin: 20px auto; }
         #wheel-canvas { transition: transform 4s cubic-bezier(0.1, 0, 0.1, 1); }
         #wheel-pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid var(--red); z-index: 10; filter: drop-shadow(0 0 5px black); }
-
-        #top-list { margin: 20px 0; max-height: 280px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 20px; padding: 5px; }
-        .row { display: flex; justify-content: space-between; padding: 15px 12px; border-bottom: 1px solid #2c2c2e; font-size: 16px; }
     </style>
 </head>
 <body onclick="startAudio()">
@@ -55,43 +60,53 @@
     <audio id="bg-music" loop><source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_7326e6328a.mp3" type="audio/mpeg"></audio>
 
     <div id="main-menu">
-        <h1 style="color:var(--holy); margin-bottom: 30px; text-shadow: 0 0 20px var(--holy);">HOLY TAP</h1>
+        <h1 style="color:var(--holy); margin-bottom: 20px; text-shadow: 0 0 20px var(--holy);">HOLY TAP</h1>
         <button id="m-btn-play" class="menu-btn btn-play">ИГРАТЬ</button>
-        <button id="m-btn-bless" class="menu-btn">БЛАГОСЛОВЕНИЕ</button>
-        <button id="m-btn-wheel" class="menu-btn">КОЛЕСО ФОРТУНЫ</button>
-        <p style="color:#555; font-size: 12px; margin-top: 20px;">Версия 1.3.1: Стабильность</p>
+        <button id="m-btn-bless" class="menu-btn">🙏 БЛАГОСЛОВЕНИЕ</button>
+        <button id="m-btn-wheel" class="menu-btn">🎡 КОЛЕСО ФОРТУНЫ</button>
+        <p style="color:#555; font-size: 11px; margin-top: 15px;">Версия 1.4.0: Divine Update</p>
     </div>
 
     <div id="header">
         <div id="score">0</div>
-        <div id="stats">Сила молитвы: <b id="val-pwr">+1</b></div>
+        <div id="stats">Сила молитвы: <b id="val-pwr">+1</b> <span id="x2-tag" style="display:none; color:var(--blue);">[x2]</span></div>
     </div>
 
     <div id="game-area"><div id="halo">😇</div></div>
 
     <div id="footer">
-        <button id="btn-upd" class="btn">⚡ УЛУЧШИТЬ<span id="cost-upd">50</span></button>
-        <button id="btn-case" class="btn">🎡 КОЛЕСО<span>900</span></button>
+        <button id="btn-upd" class="btn">⚡ АПГРЕЙД<span id="cost-upd">50</span></button>
+        <button id="btn-case" class="btn">📦 КЕЙС<span>500</span></button>
+        <button id="btn-top" class="btn">🏆 ТОП</button>
+        <button id="btn-gift" class="btn">🎁 БОНУС</button>
         <button id="btn-friends" class="btn">👥 ДРУЗЬЯ</button>
-        <button id="btn-top" class="btn">🏆 РЕЙТИНГ</button>
-        <button id="btn-gift" class="btn">🎁 ПОДАРОК</button>
         <button id="btn-sets" class="btn">⚙️</button>
     </div>
 
     <div id="modal-case" class="modal">
         <div class="modal-box">
-            <h2 id="case-title" style="color:var(--holy); margin:0;">КОЛЕСО СУДЬБЫ</h2>
+            <h2 id="case-status">СВЯТОЙ КЕЙС</h2>
+            <div id="case-anim">🎁</div>
+            <button id="btn-open-case" class="btn" style="width:100%; background:var(--purple);">ОТКРЫТЬ (500)</button>
+            <button id="btn-close-case" class="btn" style="display:none; width:100%; background:var(--gray); margin-top:10px;">ЗАКРЫТЬ</button>
+        </div>
+    </div>
+
+    <div id="modal-wheel" class="modal">
+        <div class="modal-box">
+            <h2 id="wheel-title">КОЛЕСО СУДЬБЫ</h2>
             <div id="wheel-container">
                 <div id="wheel-pointer"></div>
                 <canvas id="wheel-canvas" width="260" height="260"></canvas>
             </div>
             <button id="btn-spin" class="btn" style="width:100%; background:var(--holy); color:black;">КРУТИТЬ (900)</button>
             <button id="btn-claim" class="btn" style="display:none; width:100%; background:var(--blue); margin-top:10px;">ЗАБРАТЬ</button>
+            <button id="btn-close-wheel" class="btn" style="width:100%; background:transparent; margin-top:5px;">ВЫЙТИ</button>
         </div>
     </div>
 
     <div id="modal-top" class="modal"><div class="modal-box"><h2>🏆 Топ Пилотов</h2><div id="top-list"></div><button id="close-top" class="btn" style="width:100%; background:var(--gray);">ЗАКРЫТЬ</button></div></div>
-    <div id="modal-friends" class="modal"><div class="modal-box"><h1>👥</h1><h2>Друзья</h2><button id="btn-invite-act" class="btn" style="width:100%; background:var(--orange);">ОТПРАВИТЬ ССЫЛКУ</button><button id="close-friends" class="btn" style="width:100%; background:transparent; margin-top:10px;">ПОЗЖЕ</button></div></div>
+    <div id="modal-friends" class="modal"><div class="modal-box"><h1>👥</h1><h2>Друзья</h2><button id="btn-invite-act" class="btn" style="width:100%; background:var(--orange);">ПРИГЛАСИТЬ</button><button id="close-friends" class="btn" style="width:100%; background:transparent; margin-top:10px;">ПОЗЖЕ</button></div></div>
     <div id="modal-sets" class="modal"><div class="modal-box"><h2>Настройки</h2><button id="toggle-mu" class="btn" style="width:100%; background:var(--blue); margin-bottom:15px;">МУЗЫКА: ВКЛ</button><button id="close-sets" class="btn" style="width:100%; background:var(--gray);">ЗАКРЫТЬ</button></div></div>
 
     <script>
@@ -99,17 +114,16 @@
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+        tg.ready(); tg.expand();
 
         let score = Number(localStorage.getItem('rk_sc')) || 0;
         let pwr = Number(localStorage.getItem('rk_pw')) || 1;
         let cost = Number(localStorage.getItem('rk_ct')) || 50;
         let lastGift = localStorage.getItem('rk_gift') || "";
         let lastBless = localStorage.getItem('rk_bless') || "";
+        let isX2 = false;
         let musicOn = true;
         let audioStarted = false;
-        const casePrice = 900; 
         const uid = tg.initDataUnsafe?.user?.id || "player_local";
 
         function save() {
@@ -121,40 +135,64 @@
 
         function updateUI() {
             document.getElementById('score').innerText = Math.floor(score).toLocaleString('ru-RU');
-            document.getElementById('val-pwr').innerText = "+" + pwr;
+            document.getElementById('score').className = isX2 ? "x2-active" : "";
+            document.getElementById('x2-tag').style.display = isX2 ? "inline" : "none";
+            document.getElementById('val-pwr').innerText = "+" + (isX2 ? pwr * 2 : pwr);
             document.getElementById('cost-upd').innerText = cost;
             document.getElementById('btn-upd').disabled = score < cost;
-            document.getElementById('btn-case').disabled = score < casePrice;
+            document.getElementById('btn-case').disabled = score < 500;
             const today = new Date().toDateString();
-            document.getElementById('btn-gift').disabled = (lastGift === today);
             document.getElementById('m-btn-bless').disabled = (lastBless === today);
-            document.getElementById('btn-gift').innerText = (lastGift === today) ? "ВЗЯТО ✅" : "🎁 ПОДАРОК";
+            document.getElementById('btn-gift').innerText = (lastGift === today) ? "ОК" : "🎁 БОНУС";
         }
 
-        // КЛИКЕР
+        // ТАП
         document.getElementById('halo').addEventListener('touchstart', (e) => {
             e.preventDefault();
             for(let i=0; i<e.touches.length; i++) {
-                handleTap(e.touches[i].clientX, e.touches[i].clientY);
+                let currentPwr = isX2 ? pwr * 2 : pwr;
+                score += currentPwr;
+                const p = document.createElement('div');
+                p.className = 'pop' + (isX2 ? ' blue' : ''); 
+                p.innerText = `+${currentPwr}`;
+                p.style.left = (e.touches[i].clientX - 20) + 'px'; p.style.top = (e.touches[i].clientY - 20) + 'px';
+                document.body.appendChild(p);
+                setTimeout(() => p.remove(), 700);
             }
-        });
-
-        function handleTap(x, y) {
-            score += pwr;
-            const p = document.createElement('div');
-            p.className = 'pop'; p.innerText = `+${pwr}`;
-            p.style.left = (x - 20) + 'px'; p.style.top = (y - 20) + 'px';
-            document.body.appendChild(p);
-            setTimeout(() => p.remove(), 700);
             tg.HapticFeedback.impactOccurred('light');
             save();
-        }
+        });
+
+        // КЕЙСЫ
+        document.getElementById('btn-case').onclick = () => { document.getElementById('modal-case').style.display = 'flex'; };
+        document.getElementById('btn-open-case').onclick = () => {
+            if(score < 500) return;
+            score -= 500; save();
+            const btn = document.getElementById('btn-open-case');
+            const box = document.getElementById('case-anim');
+            btn.style.display = 'none';
+            box.classList.add('shake');
+            
+            setTimeout(() => {
+                box.classList.remove('shake');
+                const rand = Math.random();
+                let winText = "";
+                if(rand < 0.1) { isX2 = true; winText = "БОНУС x2 (на время сессии)!"; setTimeout(()=> {isX2=false; updateUI();}, 60000); }
+                else if(rand < 0.4) { let win = pwr * 50; score += win; winText = `+${win} ОЧКОВ!`; }
+                else { pwr += 2; winText = "+2 К СИЛЕ!"; }
+                
+                document.getElementById('case-status').innerText = winText;
+                box.innerText = "✨";
+                document.getElementById('btn-close-case').style.display = 'block';
+                save();
+            }, 1500);
+        };
 
         // КОЛЕСО
         const canvas = document.getElementById('wheel-canvas');
         const ctx = canvas.getContext('2d');
-        const sectors = [50, 500, 100, 2500, 50, 1000, 200, 5000];
-        const colors = ["#2c2c2e", "#ffcf40", "#333", "#bf5af2", "#2c2c2e", "#0a84ff", "#444", "#ff453a"];
+        const sectors = [100, "X2", 500, 50, 2000, 100, 5000, 0];
+        const colors = ["#2c2c2e", "#0a84ff", "#333", "#444", "#bf5af2", "#2c2c2e", "#ffcf40", "#ff453a"];
 
         function drawWheel() {
             const arc = (Math.PI * 2) / sectors.length;
@@ -163,32 +201,28 @@
                 ctx.beginPath(); ctx.fillStyle = colors[i]; ctx.moveTo(130, 130);
                 ctx.arc(130, 130, 130, i * arc, (i + 1) * arc); ctx.fill();
                 ctx.save(); ctx.translate(130, 130); ctx.rotate(i * arc + arc/2);
-                ctx.fillStyle = "white"; ctx.font = "bold 16px Arial"; ctx.fillText(s, 70, 5); ctx.restore();
+                ctx.fillStyle = "white"; ctx.font = "bold 14px Arial"; ctx.fillText(s, 75, 5); ctx.restore();
             });
         }
 
-        function spinWheel() {
+        document.getElementById('btn-spin').onclick = () => {
             if(score < 900) return;
             score -= 900; save();
             document.getElementById('btn-spin').style.display = 'none';
-            const extraDeg = Math.floor(3600 + Math.random() * 3600);
-            canvas.style.transform = `rotate(${extraDeg}deg)`;
-            
+            const deg = Math.floor(3600 + Math.random() * 3600);
+            canvas.style.transform = `rotate(${deg}deg)`;
             setTimeout(() => {
-                const actualDeg = extraDeg % 360;
-                const sectorDeg = 360 / sectors.length;
-                // Стрелка сверху (270 град). Вычисляем какой сектор там оказался
-                const winIdx = Math.floor(((360 - actualDeg % 360) + 270) % 360 / sectorDeg);
+                const winIdx = Math.floor(((360 - deg % 360) + 270) % 360 / (360/sectors.length));
                 const win = sectors[winIdx];
-                score += win;
-                document.getElementById('case-title').innerText = `ВЫИГРЫШ: ${win}!`;
+                if(win === "X2") { isX2 = true; setTimeout(()=>isX2=false, 120000); }
+                else { score += Number(win); }
+                document.getElementById('wheel-title').innerText = `ВЫИГРЫШ: ${win}`;
                 document.getElementById('btn-claim').style.display = 'block';
-                tg.HapticFeedback.notificationOccurred('success');
                 save();
             }, 4000);
-        }
+        };
 
-        // ОБРАБОТЧИКИ (JS ВМЕСТО HTML)
+        // МЕНЮ И КНОПКИ
         document.getElementById('m-btn-play').onclick = () => {
             document.getElementById('main-menu').style.opacity = '0';
             setTimeout(() => document.getElementById('main-menu').style.display = 'none', 300);
@@ -196,50 +230,55 @@
 
         document.getElementById('m-btn-bless').onclick = () => {
             const today = new Date().toDateString();
-            if(lastBless !== today) {
-                score += 5000; lastBless = today; save();
-                tg.showAlert("Благословение получено: +5,000!");
-            }
+            if(lastBless !== today) { score += 5000; lastBless = today; save(); tg.showAlert("Благословение +5,000!"); }
         };
 
         document.getElementById('m-btn-wheel').onclick = () => {
             document.getElementById('main-menu').style.display = 'none';
-            document.getElementById('modal-case').style.display = 'flex';
+            document.getElementById('modal-wheel').style.display = 'flex';
             drawWheel();
         };
 
-        document.getElementById('btn-upd').onclick = () => {
-            if(score >= cost) { score -= cost; pwr++; cost = Math.round(cost * 1.6); save(); }
-        };
-
-        document.getElementById('btn-case').onclick = () => {
-            document.getElementById('modal-case').style.display = 'flex';
-            drawWheel();
-        };
-
-        document.getElementById('btn-spin').onclick = spinWheel;
-        document.getElementById('btn-claim').onclick = () => closeModal('modal-case');
-
+        document.getElementById('btn-upd').onclick = () => { if(score >= cost) { score -= cost; pwr++; cost = Math.round(cost * 1.6); save(); } };
         document.getElementById('btn-gift').onclick = () => {
             const today = new Date().toDateString();
-            if(lastGift !== today) { score += 2500; lastGift = today; save(); tg.showAlert("Бонус +2500 получен!"); }
+            if(lastGift !== today) { score += 2500; lastGift = today; save(); tg.showAlert("Бонус +2500!"); }
         };
 
         document.getElementById('btn-top').onclick = () => {
             document.getElementById('modal-top').style.display = 'flex';
             db.ref('leaderboard').orderByChild('score').limitToLast(10).once('value').then(snap => {
                 const list = document.getElementById('top-list'); list.innerHTML = "";
-                let players = []; snap.forEach(c => { players.push(c.val()); });
-                players.reverse().forEach((p, i) => { list.innerHTML += `<div class="row"><span>${i+1}. ${p.name}</span><b>${p.score.toLocaleString()}</b></div>`; });
+                let p = []; snap.forEach(c => p.push(c.val()));
+                p.reverse().forEach((p, i) => { list.innerHTML += `<div class="row"><span>${i+1}. ${p.name}</span><b>${p.score}</b></div>`; });
             });
         };
 
         document.getElementById('btn-friends').onclick = () => document.getElementById('modal-friends').style.display = 'flex';
         document.getElementById('btn-sets').onclick = () => document.getElementById('modal-sets').style.display = 'flex';
         
-        document.getElementById('close-top').onclick = () => closeModal('modal-top');
-        document.getElementById('close-friends').onclick = () => closeModal('modal-friends');
-        document.getElementById('close-sets').onclick = () => closeModal('modal-sets');
+        function closeModal(id) { 
+            document.getElementById(id).style.display = 'none'; 
+            if(id === 'modal-case') {
+                document.getElementById('case-status').innerText = "СВЯТОЙ КЕЙС";
+                document.getElementById('case-anim').innerText = "🎁";
+                document.getElementById('btn-open-case').style.display = 'block';
+                document.getElementById('btn-close-case').style.display = 'none';
+            }
+            if(id === 'modal-wheel') {
+                document.getElementById('wheel-title').innerText = "КОЛЕСО СУДЬБЫ";
+                document.getElementById('btn-spin').style.display = 'block';
+                document.getElementById('btn-claim').style.display = 'none';
+                canvas.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        document.getElementById('btn-close-case').onclick = () => closeModal('modal-case');
+        document.getElementById('btn-claim').onclick = () => closeModal('modal-wheel');
+        document.getElementById('btn-close-wheel').onclick = () => closeModal('modal-wheel');
+        document.getElementById('close-top').onclick = () => document.getElementById('modal-top').style.display='none';
+        document.getElementById('close-friends').onclick = () => document.getElementById('modal-friends').style.display='none';
+        document.getElementById('close-sets').onclick = () => document.getElementById('modal-sets').style.display='none';
 
         document.getElementById('toggle-mu').onclick = function() {
             musicOn = !musicOn; const audio = document.getElementById('bg-music');
@@ -247,16 +286,6 @@
             this.innerText = `МУЗЫКА: ${musicOn ? 'ВКЛ' : 'ВЫКЛ'}`;
         };
 
-        function closeModal(id) { 
-            document.getElementById(id).style.display = 'none'; 
-            if(id === 'modal-case') {
-                document.getElementById('btn-spin').style.display = 'block';
-                document.getElementById('btn-claim').style.display = 'none';
-                document.getElementById('case-title').innerText = "КОЛЕСО СУДЬБЫ";
-                canvas.style.transform = 'rotate(0deg)';
-            }
-        }
-        
         function startAudio() { if(!audioStarted && musicOn) { document.getElementById('bg-music').play().then(()=>audioStarted=true).catch(()=>{}); } }
         
         updateUI();
