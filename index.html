@@ -10,61 +10,47 @@
         :root { --bg: #0b0b0d; --orange: #ff9f0a; --holy: #ffcf40; --blue: #0a84ff; --purple: #bf5af2; --gray: #2c2c2e; --red: #ff453a; --glass: rgba(255, 255, 255, 0.08); }
         body { background: var(--bg); color: white; font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; -webkit-user-select: none; }
 
-        /* ГЛАВНОЕ МЕНЮ */
+        /* МЕНЮ */
         #main-menu { position: fixed; inset: 0; background: radial-gradient(circle at center, #1c1c1e, #000); z-index: 3000; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; }
         .menu-btn { width: 260px; height: 60px; margin: 12px; border-radius: 20px; border: 1px solid var(--holy); background: rgba(255,207,64,0.1); color: var(--holy); font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        .menu-btn:active { transform: scale(0.95); }
-        .menu-btn:disabled { opacity: 0.3; }
-        .btn-play { background: var(--holy); color: black; font-size: 22px; }
+        .menu-btn:disabled { opacity: 0.3; filter: grayscale(1); }
 
-        #header { padding-top: env(safe-area-inset-top); height: 110px; text-align: center; display: flex; flex-direction: column; justify-content: center; background: linear-gradient(to bottom, rgba(255,207,64,0.1), transparent); }
-        #score { font-size: 54px; font-weight: 900; color: var(--holy); text-shadow: 0 0 30px rgba(255,207,64,0.4); letter-spacing: -1px; }
-        #stats { font-size: 14px; color: #8e8e93; font-weight: 500; text-transform: uppercase; }
+        #header { padding-top: env(safe-area-inset-top); height: 110px; text-align: center; z-index: 5; }
+        #score { font-size: 54px; font-weight: 900; color: var(--holy); text-shadow: 0 0 30px rgba(255,207,64,0.4); }
 
+        /* КЛИКЕР И ПЛАВНЫЕ ЦИФРЫ */
         #game-area { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
-        #btn-back-menu { background: var(--glass); border: 1px solid #444; color: #fff; padding: 8px 20px; border-radius: 12px; font-size: 12px; cursor: pointer; margin-bottom: 20px; z-index: 10; }
-
-        #halo { width: 190px; height: 190px; background: radial-gradient(circle at 30% 30%, #fff, var(--holy)); border-radius: 50%; border: 8px solid rgba(255,255,255,0.3); font-size: 90px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 60px rgba(255,207,64,0.5); transition: transform 0.05s; touch-action: manipulation; }
+        #halo { width: 190px; height: 190px; background: radial-gradient(circle at 30% 30%, #fff, var(--holy)); border-radius: 50%; font-size: 90px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 60px rgba(255,207,64,0.5); transition: transform 0.05s; z-index: 2; }
         #halo:active { transform: scale(0.92); }
 
-        .pop { position: absolute; font-size: 38px; font-weight: 900; color: white; pointer-events: none; animation: fly 0.7s ease-out forwards; z-index: 20; }
-        @keyframes fly { 0% { transform: translateY(0) opacity: 1; } 100% { transform: translateY(-180px) opacity: 0; } }
+        .pop { position: absolute; font-size: 38px; font-weight: 900; color: white; pointer-events: none; z-index: 10; animation: floatOut 0.8s ease-out forwards; }
+        @keyframes floatOut {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-150px) scale(1.2); opacity: 0; }
+        }
 
-        #footer { background: rgba(28, 28, 30, 0.8); backdrop-filter: blur(20px); padding: 20px 15px calc(25px + env(safe-area-inset-bottom)); border-radius: 35px 35px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border-top: 1px solid rgba(255,255,255,0.1); }
-        .btn { height: 56px; border: none; border-radius: 18px; font-weight: 700; font-size: 14px; color: white; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; -webkit-tap-highlight-color: transparent; }
-        .btn:disabled { opacity: 0.3; }
-        .btn span { font-size: 10px; opacity: 0.7; margin-top: 2px; }
+        /* КРУГЛОЕ КОЛЕСО ФОРТУНЫ */
+        #wheel-container { position: relative; width: 280px; height: 280px; margin-bottom: 20px; border: 8px solid #333; border-radius: 50%; overflow: hidden; transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1); background: #222; }
+        #wheel-pointer { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid var(--red); z-index: 100; }
+        .sector { position: absolute; width: 50%; height: 50%; transform-origin: 100% 100%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; }
 
-        #btn-upd { background: var(--glass); border: 1px solid var(--blue); color: var(--blue); }
-        #btn-case { background: var(--glass); border: 1px solid var(--purple); color: var(--purple); }
-        #btn-friends { background: var(--glass); border: 1px solid var(--orange); color: var(--orange); }
-        #btn-top { background: var(--glass); border: 1px solid #fff; color: #fff; }
-        #btn-gift { background: #1c1c1e; border: 1px solid #333; }
-        #btn-sets { background: #1c1c1e; border: 1px solid #333; font-size: 20px; }
-
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(8px); z-index: 4000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        .modal-box { width: 100%; max-width: 360px; background: #1c1c1e; border-radius: 30px; padding: 30px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
-        
-        #roll-wrap { width: 100%; height: 100px; border: 1px solid #333; margin: 25px 0; overflow: hidden; position: relative; background: #000; border-radius: 15px; }
-        #roll-track { display: flex; position: absolute; left: 0; height: 100%; }
-        .item { min-width: 100px; width: 100px; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 26px; border-right: 1px solid #111; }
-        #hitbox { position: absolute; left: 50%; top: 0; bottom: 0; width: 4px; background: var(--red); transform: translateX(-50%); z-index: 50; box-shadow: 0 0 10px var(--red); }
-        
-        #top-list { margin: 20px 0; max-height: 280px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 20px; padding: 5px; }
-        .row { display: flex; justify-content: space-between; padding: 15px 12px; border-bottom: 1px solid #2c2c2e; font-size: 16px; }
+        /* ОСТАЛЬНОЕ */
+        #footer { background: rgba(28, 28, 30, 0.8); backdrop-filter: blur(20px); padding: 20px 15px calc(25px + env(safe-area-inset-bottom)); display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border-radius: 35px 35px 0 0; }
+        .btn { height: 56px; border-radius: 18px; border: none; font-weight: 700; color: white; cursor: pointer; }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 4000; flex-direction: column; align-items: center; justify-content: center; }
+        .modal-box { width: 90%; max-width: 360px; background: #1c1c1e; border-radius: 30px; padding: 25px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+        .row { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #333; }
+        #top-list { max-height: 300px; overflow-y: auto; margin: 15px 0; }
     </style>
 </head>
 <body onclick="startAudio()">
 
     <div id="main-menu">
-        <h1 style="color:var(--holy); margin-bottom: 10px; text-shadow: 0 0 20px var(--holy);">HOLY TAP</h1>
-        <p style="color: #888; margin-bottom: 30px;">Обновление: Путь Иисуса</p>
-        <button class="menu-btn btn-play" onclick="closeMenu()">ИГРАТЬ</button>
+        <h1 style="color:var(--holy);">HOLY TAP</h1>
+        <button class="menu-btn" style="background:var(--holy); color:black;" onclick="closeMenu()">ИГРАТЬ</button>
         <button id="menu-bless" class="menu-btn" onclick="applyBlessing()">БЛАГОСЛОВЕНИЕ (+5000)</button>
-        <button id="menu-wheel" class="menu-btn" onclick="openWheel()">КОЛЕСО ФОРТУНЫ (1000)</button>
+        <button id="menu-wheel-btn" class="menu-btn" onclick="openWheelModal()">КОЛЕСО ФОРТУНЫ (1000)</button>
     </div>
-
-    <audio id="bg-music" loop><source src="https://www.bensound.com/bensound-music/bensound-slowmotion.mp3" type="audio/mpeg"></audio>
 
     <div id="header">
         <div id="score">0</div>
@@ -72,59 +58,39 @@
     </div>
 
     <div id="game-area">
-        <button id="btn-back-menu" onclick="openMenu()">МЕНЮ</button>
+        <button onclick="openMenu()" style="background:var(--glass); border:1px solid #444; color:white; padding:8px 15px; border-radius:10px; margin-bottom:20px;">МЕНЮ</button>
         <div id="halo">😇</div>
     </div>
 
     <div id="footer">
-        <button id="btn-upd" class="btn">⚡ УЛУЧШИТЬ<span id="cost-upd">50</span></button>
-        <button id="btn-case" class="btn">💎 КЕЙС<span>900</span></button>
-        <button id="btn-friends" class="btn">👥 ДРУЗЬЯ</button>
-        <button id="btn-top" class="btn">🏆 РЕЙТИНГ</button>
-        <button id="btn-gift" class="btn">🎁 ПОДАРОК</button>
-        <button id="btn-sets" class="btn">⚙️</button>
+        <button id="btn-upd" class="btn" style="background:var(--glass); border:1px solid var(--blue); color:var(--blue);">⚡ УЛУЧШИТЬ <span id="cost-upd">50</span></button>
+        <button id="btn-case" class="btn" onclick="openCase()" style="background:var(--glass); border:1px solid var(--purple); color:var(--purple);">💎 КЕЙС <span>900</span></button>
+        <button onclick="openModal('modal-friends')" class="btn" style="background:var(--glass); border:1px solid var(--orange); color:var(--orange);">👥 ДРУЗЬЯ</button>
+        <button id="btn-top" class="btn" style="background:var(--glass); border:1px solid #fff;">🏆 РЕЙТИНГ</button>
     </div>
 
-    <div id="modal-roll" class="modal">
+    <div id="modal-wheel" class="modal">
         <div class="modal-box">
-            <h2 id="roll-title" style="color:var(--holy); margin:0;">УДАЧИ!</h2>
-            <div id="roll-wrap">
-                <div id="hitbox"></div>
-                <div id="roll-track"></div>
-            </div>
-            <button id="btn-claim" onclick="closeModal('modal-roll')" class="btn" style="display:none; width:100%; background:var(--blue); height: 50px;">ЗАБРАТЬ</button>
+            <div id="wheel-pointer"></div>
+            <div id="wheel-container"></div>
+            <h2 id="wheel-res">КРУТИТЕ!</h2>
+            <button id="wheel-spin-btn" class="menu-btn" style="width:100%; margin:10px 0;" onclick="spinWheel()">КРУТИТЬ (1000)</button>
+            <button onclick="closeModal('modal-wheel')" class="btn" style="width:100%; background:var(--gray);">ЗАКРЫТЬ</button>
         </div>
     </div>
 
     <div id="modal-top" class="modal">
         <div class="modal-box">
-            <h2 style="margin:0;">🏆 Топ Святых</h2>
+            <h2>🏆 Топ Святых</h2>
             <div id="top-list">Загрузка...</div>
-            <button onclick="closeModal('modal-top')" class="btn" style="width:100%; background:var(--gray); height: 50px;">ЗАКРЫТЬ</button>
-        </div>
-    </div>
-
-    <div id="modal-friends" class="modal">
-        <div class="modal-box">
-            <h1 style="font-size: 40px; margin: 0;">👥</h1>
-            <h2>Пригласи друга</h2>
-            <p style="color: #888; font-size: 14px; margin-bottom: 25px;">Пригласи друга и получи <b style="color:var(--orange);">+5,000</b>!</p>
-            <button id="btn-invite-act" class="btn" style="width:100%; background:var(--orange); height: 50px;">ОТПРАВИТЬ ССЫЛКУ</button>
-            <button onclick="closeModal('modal-friends')" class="btn" style="width:100%; background:transparent; margin-top:10px; height: 40px;">ПОЗЖЕ</button>
-        </div>
-    </div>
-
-    <div id="modal-sets" class="modal">
-        <div class="modal-box">
-            <h2 style="margin:0 0 20px 0;">Настройки</h2>
-            <button id="toggle-mu" class="btn" style="width:100%; background:var(--blue); margin-bottom:15px; height: 50px;">МУЗЫКА: ВКЛ</button>
-            <button onclick="closeModal('modal-sets')" class="btn" style="width:100%; background:var(--gray); height: 50px;">ЗАКРЫТЬ</button>
+            <button onclick="closeModal('modal-top')" class="btn" style="width:100%; background:var(--gray);">ЗАКРЫТЬ</button>
         </div>
     </div>
 
     <script>
+        // Инициализация Firebase (твои ключи)
         const firebaseConfig = { apiKey: "AIzaSyAhFyYz8tC0VZqNKQweM1VH7A9rzcLQ7L4", authDomain: "rockettap-22e98.firebaseapp.com", databaseURL: "https://rockettap-22e98-default-rtdb.firebaseio.com", projectId: "rockettap-22e98", storageBucket: "rockettap-22e98.firebasestorage.app", messagingSenderId: "800263373343", appId: "1:800263373343:web:ed6db2e822f61d8257cb2a" };
-        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const tg = window.Telegram.WebApp;
         tg.expand();
@@ -132,20 +98,26 @@
         let score = Number(localStorage.getItem('rk_sc')) || 0;
         let pwr = Number(localStorage.getItem('rk_pw')) || 1;
         let cost = Number(localStorage.getItem('rk_ct')) || 50;
-        let lastGift = localStorage.getItem('rk_gift') || "";
         let lastBless = localStorage.getItem('rk_bless') || "";
-        let musicOn = localStorage.getItem('rk_mu') !== "off";
-        let audioStarted = false;
+        const uid = tg.initDataUnsafe?.user?.id || "local_user";
 
-        const uid = tg.initDataUnsafe?.user?.id || "player_local";
+        // Генерация секторов колеса
+        const prizes = [50, 100, 500, 1000, 5000, 200, 50, 1000];
+        const wheel = document.getElementById('wheel-container');
+        prizes.forEach((p, i) => {
+            const s = document.createElement('div');
+            s.className = 'sector';
+            s.style.transform = `rotate(${i * 45}deg) skewY(-45deg)`;
+            s.style.background = i % 2 === 0 ? '#333' : '#444';
+            s.innerHTML = `<span style="transform: skewY(45deg) rotate(22.5deg); margin: 20px 0 0 20px;">${p}</span>`;
+            wheel.appendChild(s);
+        });
 
         function save() {
             localStorage.setItem('rk_sc', score);
             localStorage.setItem('rk_pw', pwr);
             localStorage.setItem('rk_ct', cost);
-            localStorage.setItem('rk_gift', lastGift);
             localStorage.setItem('rk_bless', lastBless);
-            localStorage.setItem('rk_mu', musicOn ? "on" : "off");
             db.ref('leaderboard/' + uid).update({ name: tg.initDataUnsafe?.user?.first_name || "Святой", score: Math.floor(score) });
             updateUI();
         }
@@ -155,124 +127,78 @@
             document.getElementById('val-pwr').innerText = "+" + pwr;
             document.getElementById('cost-upd').innerText = cost;
             document.getElementById('btn-upd').disabled = score < cost;
-            document.getElementById('btn-case').disabled = score < 900;
-            document.getElementById('menu-wheel').disabled = score < 1000;
-            
-            const today = new Date().toDateString();
-            document.getElementById('btn-gift').disabled = (lastGift === today);
-            document.getElementById('btn-gift').innerText = (lastGift === today) ? "ВЗЯТО ✅" : "🎁 ПОДАРОК";
-            document.getElementById('menu-bless').disabled = (lastBless === today);
-            document.getElementById('toggle-mu').innerText = `МУЗЫКА: ${musicOn ? 'ВКЛ' : 'ВЫКЛ'}`;
-            document.getElementById('toggle-mu').style.background = musicOn ? 'var(--blue)' : 'var(--red)';
+            document.getElementById('menu-bless').disabled = (lastBless === new Date().toDateString());
         }
 
-        function openMenu() { document.getElementById('main-menu').style.display = 'flex'; }
-        function closeMenu() { document.getElementById('main-menu').style.display = 'none'; }
+        // ПЛАВНЫЙ КЛИК
+        function handleTap(e) {
+            let x = e.touches ? e.touches[0].clientX : e.clientX;
+            let y = e.touches ? e.touches[0].clientY : e.clientY;
+            score += pwr;
+            const p = document.createElement('div');
+            p.className = 'pop'; p.innerText = `+${pwr}`;
+            p.style.left = (x - 20) + 'px'; p.style.top = (y - 50) + 'px';
+            document.body.appendChild(p);
+            setTimeout(() => p.remove(), 800);
+            tg.HapticFeedback.impactOccurred('light');
+            save();
+        }
+        document.getElementById('halo').addEventListener('touchstart', (e) => { e.preventDefault(); handleTap(e); });
 
+        // БЛАГОСЛОВЕНИЕ
         function applyBlessing() {
             const today = new Date().toDateString();
             if(lastBless !== today) {
                 score += 5000;
                 lastBless = today;
                 save();
-                tg.showAlert("Благословение получено! +5000");
+                tg.showAlert("Вы получили благословение небес! +5000");
             }
         }
 
-        function handleTap(x, y) {
-            score += pwr;
-            const p = document.createElement('div');
-            p.className = 'pop'; p.innerText = `+${pwr}`;
-            p.style.left = (x - 20) + 'px'; p.style.top = (y - 20) + 'px';
-            document.body.appendChild(p);
-            setTimeout(() => p.remove(), 700);
-            tg.HapticFeedback.impactOccurred('light');
-            save();
-        }
-
-        document.getElementById('halo').addEventListener('touchstart', (e) => { e.preventDefault(); handleTap(e.touches[0].clientX, e.touches[0].clientY); });
-
-        // ЛОГИКА РОЛЛА (Для кейса и колеса)
-        function startRoll(type) {
-            let price = type === 'wheel' ? 1000 : 900;
-            if(score < price) return;
-            score -= price; save();
-            closeMenu();
-
-            const modal = document.getElementById('modal-roll');
-            const track = document.getElementById('roll-track');
-            const title = document.getElementById('roll-title');
-            const claim = document.getElementById('btn-claim');
-
-            modal.style.display = 'flex';
-            claim.style.display = 'none';
-            title.innerText = type === 'wheel' ? "КОЛЕСО ФОРТУНЫ" : "ОТКРЫТИЕ КЕЙСА";
+        // КОЛЕСО ФОРТУНЫ
+        let isSpinning = false;
+        function openWheelModal() { closeMenu(); openModal('modal-wheel'); }
+        function spinWheel() {
+            if(isSpinning || score < 1000) return;
+            score -= 1000;
+            isSpinning = true;
+            document.getElementById('wheel-spin-btn').disabled = true;
+            const randDeg = Math.floor(3000 + Math.random() * 3000);
+            wheel.style.transform = `rotate(${randDeg}deg)`;
             
-            track.style.transition = 'none';
-            track.style.transform = 'translateX(0)';
-            track.innerHTML = '';
-
-            const winIdx = 40;
-            const winVal = type === 'wheel' ? [100, 500, 1000, 2000, 5000][Math.floor(Math.random()*5)] : [50, 100, 500, 1000, 10000][Math.floor(Math.random()*5)];
-
-            for(let i = 0; i < 50; i++) {
-                let v = (i === winIdx) ? winVal : [10, 50, 100][Math.floor(Math.random()*3)];
-                track.innerHTML += `<div class="item" style="color:${v >= 1000 ? 'var(--holy)' : 'white'}">${v}</div>`;
-            }
-
             setTimeout(() => {
-                track.style.transition = 'transform 4s cubic-bezier(0.1, 0, 0.1, 1)';
-                const shift = (winIdx * 100) + 50 - (document.getElementById('roll-wrap').offsetWidth / 2);
-                track.style.transform = `translateX(-${shift}px)`;
-                setTimeout(() => {
-                    score += winVal; save();
-                    title.innerText = `ВЫИГРЫШ: ${winVal}!`;
-                    claim.style.display = 'block';
-                    tg.HapticFeedback.notificationOccurred('success');
-                }, 4100);
-            }, 50);
+                isSpinning = false;
+                const actualDeg = randDeg % 360;
+                const prizeIdx = Math.floor(((360 - actualDeg + 22.5) % 360) / 45);
+                const win = prizes[prizeIdx];
+                score += win;
+                document.getElementById('wheel-res').innerText = `ВЫИГРЫШ: ${win}!`;
+                document.getElementById('wheel-spin-btn').disabled = false;
+                save();
+                tg.HapticFeedback.notificationOccurred('success');
+            }, 4000);
         }
 
-        document.getElementById('btn-case').onclick = () => startRoll('case');
-        window.openWheel = () => startRoll('wheel');
-
-        // КНОПКИ
-        document.getElementById('btn-upd').onclick = () => { if(score >= cost) { score -= cost; pwr++; cost = Math.round(cost * 1.6); save(); } };
-        document.getElementById('btn-gift').onclick = () => {
-            const today = new Date().toDateString();
-            if(lastGift !== today) { score += 2500; lastGift = today; save(); tg.showAlert("Бонус +2500!"); }
-        };
-
+        // РЕЙТИНГ
         document.getElementById('btn-top').onclick = () => {
-            document.getElementById('modal-top').style.display = 'flex';
+            openModal('modal-top');
             db.ref('leaderboard').orderByChild('score').limitToLast(10).once('value').then(snap => {
-                const list = document.getElementById('top-list'); list.innerHTML = "";
-                let ps = []; snap.forEach(c => ps.push(c.val()));
-                ps.reverse().forEach((p, i) => {
+                const list = document.getElementById('top-list');
+                list.innerHTML = "";
+                let players = [];
+                snap.forEach(child => { players.push(child.val()); });
+                players.reverse().forEach((p, i) => {
                     list.innerHTML += `<div class="row"><span>${i+1}. ${p.name}</span><b>${p.score.toLocaleString()}</b></div>`;
                 });
             });
         };
 
-        document.getElementById('btn-friends').onclick = () => document.getElementById('modal-friends').style.display = 'flex';
-        document.getElementById('btn-invite-act').onclick = () => {
-            tg.openTelegramLink(`https://t.me/share/url?url=https://t.me/YOUR_BOT?start=${uid}&text=Стань святым в Holy Tap!`);
-        };
-
-        document.getElementById('btn-sets').onclick = () => document.getElementById('modal-sets').style.display = 'flex';
-        document.getElementById('toggle-mu').onclick = () => {
-            musicOn = !musicOn;
-            const audio = document.getElementById('bg-music');
-            if(musicOn) audio.play(); else audio.pause();
-            save();
-        };
-
+        function openMenu() { document.getElementById('main-menu').style.display = 'flex'; }
+        function closeMenu() { document.getElementById('main-menu').style.display = 'none'; }
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-        function startAudio() { 
-            if(!audioStarted && musicOn) { 
-                document.getElementById('bg-music').play().then(()=>audioStarted=true).catch(()=>{}); 
-            } 
-        }
+        function startAudio() {} // Можно добавить музыку
         
         updateUI();
     </script>
