@@ -7,7 +7,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
     <style>
-        :root { --bg: #0b0b0d; --orange: #ff9f0a; --blue: #0a84ff; --purple: #bf5af2; --gray: #2c2c2e; --red: #ff453a; --glass: rgba(255, 255, 255, 0.08); }
+        :root { --bg: #0b0b0d; --orange: #ff9f0a; --blue: #0a84ff; --purple: #bf5af2; --gray: #2c2c2e; --red: #ff453a; --glass: rgba(255, 255, 255, 0.08); --holy: #ffcf40; }
         body { background: var(--bg); color: white; font-family: -apple-system, BlinkMacSystemFont, sans-serif; margin: 0; padding: 0; height: 100vh; display: flex; flex-direction: column; overflow: hidden; -webkit-user-select: none; }
 
         /* МЕНЮ */
@@ -16,24 +16,29 @@
         .btn-play { background: var(--orange); color: black; font-size: 22px; border: none; }
         .menu-btn:disabled { opacity: 0.4; border-color: #444; color: #888; cursor: not-allowed; }
 
-        #header { padding-top: env(safe-area-inset-top); height: 120px; text-align: center; display: flex; flex-direction: column; justify-content: center; background: linear-gradient(to bottom, rgba(255,159,10,0.1), transparent); }
-        #score { font-size: 54px; font-weight: 900; color: var(--orange); text-shadow: 0 0 30px rgba(255,159,10,0.4); }
+        #header { padding-top: env(safe-area-inset-top); height: 120px; text-align: center; display: flex; flex-direction: column; justify-content: center; }
+        #score { font-size: 54px; font-weight: 900; color: var(--holy); text-shadow: 0 0 30px rgba(255,207,64,0.4); }
         #stats { font-size: 14px; color: #8e8e93; font-weight: 500; text-transform: uppercase; }
+        #bonus-tag { color: var(--blue); font-size: 12px; font-weight: bold; display: none; margin-top: 5px; animation: pulse 1.5s infinite; }
+
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
         #game-area { flex-grow: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; position: relative; }
-        #rocket { width: 190px; height: 190px; background: radial-gradient(circle at 30% 30%, #ffcc00, #ff9f0a); border-radius: 50%; border: 8px solid rgba(255,255,255,0.2); font-size: 85px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 60px rgba(255,159,10,0.3); transition: transform 0.05s; touch-action: manipulation; }
-        #rocket:active { transform: scale(0.9); }
+        
+        /* НИМБ */
+        #halo { width: 190px; height: 190px; background: radial-gradient(circle, #fff, var(--holy)); border-radius: 50%; font-size: 90px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 60px rgba(255,207,64,0.5); transition: transform 0.05s; touch-action: manipulation; cursor: pointer; border: 5px solid rgba(255,255,255,0.3); }
+        #halo:active { transform: scale(0.92); }
 
-        .pop { position: absolute; font-size: 38px; font-weight: 900; color: white; pointer-events: none; animation: fly 0.7s ease-out forwards; z-index: 20; }
-        @keyframes fly { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-180px) scale(1.3); opacity: 0; } }
+        .pop { position: absolute; font-size: 40px; font-weight: 900; color: white; pointer-events: none; animation: fly 0.7s ease-out forwards; z-index: 20; text-shadow: 0 2px 10px rgba(0,0,0,0.5); }
+        @keyframes fly { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-150px) scale(1.5); opacity: 0; } }
 
-        /* КРАСИВОЕ КОЛЕСО */
-        #wheel-wrapper { position: relative; width: 300px; height: 300px; border: 10px solid #222; border-radius: 50%; box-shadow: 0 0 30px rgba(255,159,10,0.2), inset 0 0 20px #000; overflow: hidden; }
+        /* КОЛЕСО */
+        #wheel-wrapper { position: relative; width: 300px; height: 300px; border: 10px solid #222; border-radius: 50%; box-shadow: 0 0 30px rgba(255,159,10,0.2); overflow: hidden; }
         #wheel-container { width: 100%; height: 100%; position: relative; transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1); }
         .sector { position: absolute; width: 50%; height: 50%; transform-origin: 100% 100%; display: flex; align-items: center; justify-content: center; font-weight: 900; color: white; font-size: 16px; border: 1px solid rgba(0,0,0,0.2); }
         #wheel-pointer { position: absolute; top: -5px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid var(--red); z-index: 100; }
 
-        #footer { background: rgba(28, 28, 30, 0.8); backdrop-filter: blur(20px); padding: 20px 15px calc(25px + env(safe-area-inset-bottom)); border-radius: 35px 35px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border-top: 1px solid rgba(255,255,255,0.1); }
+        #footer { background: rgba(28, 28, 30, 0.9); backdrop-filter: blur(20px); padding: 20px 15px calc(25px + env(safe-area-inset-bottom)); border-radius: 35px 35px 0 0; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; border-top: 1px solid rgba(255,255,255,0.1); }
         .btn { height: 56px; border: none; border-radius: 18px; font-weight: 700; color: white; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; }
         .btn span { font-size: 10px; opacity: 0.7; margin-top: 2px; }
 
@@ -41,22 +46,26 @@
         #btn-case { background: var(--glass); border: 1px solid var(--purple); color: var(--purple); }
         #btn-friends { background: var(--glass); border: 1px solid var(--orange); color: var(--orange); }
         #btn-top { background: var(--glass); border: 1px solid #fff; }
-        #btn-gift { background: #1c1c1e; border: 1px solid #333; color: var(--orange); }
+        #btn-gift { background: #1c1c1e; border: 1px solid #333; color: var(--holy); }
         #btn-sets { background: #1c1c1e; border: 1px solid #333; font-size: 20px; }
 
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 6000; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
-        .modal-box { width: 100%; max-width: 360px; background: #1c1c1e; border-radius: 30px; padding: 25px; border: 1px solid rgba(255,255,255,0.1); text-align: center; }
+        .modal-box { width: 100%; max-width: 360px; background: #1c1c1e; border-radius: 30px; padding: 25px; border: 1px solid rgba(255,255,255,0.1); text-align: center; transform: scale(0.8); animation: modalIn 0.3s forwards; }
+        @keyframes modalIn { to { transform: scale(1); } }
         
         #roll-wrap { width: 100%; height: 100px; border: 1px solid #333; margin: 20px 0; overflow: hidden; position: relative; background: #000; border-radius: 15px; }
         #roll-track { display: flex; position: absolute; left: 0; height: 100%; transition: transform 4s cubic-bezier(0.1, 0, 0.1, 1); }
         .item { min-width: 100px; height: 100%; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 24px; border-right: 1px solid #111; }
         #hitbox { position: absolute; left: 50%; top: 0; bottom: 0; width: 3px; background: var(--red); transform: translateX(-50%); z-index: 50; }
+
+        #top-list .row { display: flex; justify-content: space-between; padding: 12px; border-bottom: 1px solid #222; font-size: 16px; }
+        #top-list .row:nth-child(1) { color: gold; font-weight: bold; font-size: 18px; }
     </style>
 </head>
 <body>
 
     <div id="main-menu">
-        <h1 style="color:var(--orange); font-size: 48px; margin-bottom: 40px; text-shadow: 0 0 20px rgba(255,159,10,0.3);">HOLY TAP</h1>
+        <h1 style="color:var(--holy); font-size: 48px; margin-bottom: 20px;">HOLY TAP</h1>
         <button class="menu-btn btn-play" onclick="closeMenu()">ИГРАТЬ</button>
         <button id="menu-bless" class="menu-btn" onclick="getBlessing()">БЛАГОСЛОВЕНИЕ (+5000)</button>
         <button class="menu-btn" onclick="openModal('modal-wheel')">КОЛЕСО ФОРТУНЫ</button>
@@ -64,12 +73,13 @@
 
     <div id="header">
         <div id="score">0</div>
-        <div id="stats">Прибыль за тап: <b id="val-pwr">+1</b></div>
+        <div id="stats">Прибыль: <b id="val-pwr">+1</b></div>
+        <div id="bonus-tag">🔥 2X БОНУС АКТИВИРОВАН!</div>
     </div>
 
     <div id="game-area">
-        <button onclick="openMenu()" style="background:none; border:1px solid #333; color:#555; padding:5px 12px; border-radius:8px; margin-bottom:15px; font-size:11px;">ОТКРЫТЬ МЕНЮ</button>
-        <div id="rocket" onclick="tap(event)">🚀</div>
+        <button onclick="openMenu()" style="background:none; border:1px solid #333; color:#555; padding:5px 12px; border-radius:8px; margin-bottom:15px; font-size:11px;">МЕНЮ</button>
+        <div id="halo" onclick="tap(event)">😇</div>
     </div>
 
     <div id="footer">
@@ -87,7 +97,7 @@
                 <div id="wheel-pointer"></div>
                 <div id="wheel-wrapper"><div id="wheel-container"></div></div>
             </div>
-            <h2 id="wheel-res" style="margin-top:20px; color:var(--orange);">ЖМИ КРУТИТЬ!</h2>
+            <h2 id="wheel-res" style="margin-top:20px; color:var(--holy);">УДАЧИ!</h2>
             <button id="spin-btn" class="menu-btn" style="width:100%;" onclick="spinWheel()">КРУТИТЬ (1000)</button>
             <button onclick="closeModal('modal-wheel')" class="btn" style="width:100%; background:var(--gray); margin-top:10px;">ЗАКРЫТЬ</button>
         </div>
@@ -98,15 +108,15 @@
             <h2 id="case-title" style="color:var(--purple);">КЕЙС (900)</h2>
             <div id="roll-wrap"><div id="hitbox"></div><div id="roll-track"></div></div>
             <button id="case-go" class="menu-btn" style="width:100%;" onclick="startCase()">ОТКРЫТЬ</button>
-            <button id="case-close" onclick="closeModal('modal-case')" class="btn" style="width:100%; background:var(--gray); margin-top:10px;">ЗАКРЫТЬ</button>
+            <button onclick="closeModal('modal-case')" class="btn" style="width:100%; background:var(--gray); margin-top:10px;">ЗАКРЫТЬ</button>
         </div>
     </div>
 
     <div id="modal-friends" class="modal">
         <div class="modal-box">
-            <h1 style="font-size: 50px;">👥</h1>
+            <h1>👥</h1>
             <h2>Пригласи друзей</h2>
-            <p>Приглашай друзей и получи <b style="color:var(--orange);">5000</b>!</p>
+            <p>Получи <b style="color:var(--orange);">5000</b> за друга!</p>
             <button class="menu-btn" style="width:100%;" onclick="invite()">ПРИГЛАСИТЬ</button>
             <button onclick="closeModal('modal-friends')" class="btn" style="width:100%; background:transparent;">ЗАКРЫТЬ</button>
         </div>
@@ -115,7 +125,7 @@
     <div id="modal-top" class="modal">
         <div class="modal-box">
             <h2>🏆 Топ Пилотов</h2>
-            <div id="top-list" style="margin:15px 0; max-height:250px; overflow-y:auto;"></div>
+            <div id="top-list" style="margin:15px 0; max-height:280px; overflow-y:auto;"></div>
             <button onclick="closeModal('modal-top')" class="btn" style="width:100%; background:var(--gray);">ЗАКРЫТЬ</button>
         </div>
     </div>
@@ -141,7 +151,17 @@
         let lastGift = localStorage.getItem('rk_gf') || "";
         const uid = tg.initDataUnsafe?.user?.id || "user_" + Math.floor(Math.random()*1000);
 
-        // Построение колеса
+        // Бонус 2x
+        let bonusTime = Number(localStorage.getItem('rk_bonus_end')) || 0;
+        let isBonus = Date.now() < bonusTime;
+
+        if (!localStorage.getItem('rk_first_session')) {
+            bonusTime = Date.now() + 600000; // 10 мин
+            localStorage.setItem('rk_bonus_end', bonusTime);
+            localStorage.setItem('rk_first_session', 'true');
+            tg.showAlert("🎁 Мы дали вам 2X бонус монет за клик! Оно закончится через 10 мин.");
+        }
+
         const prizes = [100, 1000, 50, 5000, 100, 500, 50, 2000];
         const wheel = document.getElementById('wheel-container');
         prizes.forEach((p, i) => {
@@ -157,13 +177,15 @@
             localStorage.setItem('rk_sc', score); localStorage.setItem('rk_pw', pwr);
             localStorage.setItem('rk_ct', cost); localStorage.setItem('rk_bl', blessTaken);
             localStorage.setItem('rk_gf', lastGift);
-            db.ref('leaderboard/' + uid).update({ name: tg.initDataUnsafe?.user?.first_name || "Пилот", score: Math.floor(score) });
+            db.ref('leaderboard/' + uid).update({ name: tg.initDataUnsafe?.user?.first_name || "Игрок", score: Math.floor(score) });
             updateUI();
         }
 
         function updateUI() {
             document.getElementById('score').innerText = Math.floor(score).toLocaleString('ru-RU');
-            document.getElementById('val-pwr').innerText = "+" + pwr;
+            isBonus = Date.now() < bonusTime;
+            document.getElementById('val-pwr').innerText = "+" + (isBonus ? pwr * 2 : pwr);
+            document.getElementById('bonus-tag').style.display = isBonus ? 'block' : 'none';
             document.getElementById('cost-upd').innerText = cost;
             document.getElementById('btn-upd').disabled = score < cost;
             
@@ -171,16 +193,17 @@
             if(blessTaken) { bBtn.disabled = true; bBtn.innerText = "ВЗЯТО ✅"; }
             
             const today = new Date().toDateString();
-            document.getElementById('btn-gift').disabled = lastGift === today;
-            document.getElementById('btn-gift').innerText = lastGift === today ? "ВЗЯТО ✅" : "🎁 ПОДАРОК";
+            document.getElementById('btn-gift').disabled = (lastGift === today);
         }
 
         function tap(e) {
-            score += pwr;
+            let add = isBonus ? pwr * 2 : pwr;
+            score += add;
             const x = e.clientX || e.touches[0].clientX;
             const y = e.clientY || e.touches[0].clientY;
             const p = document.createElement('div');
-            p.className = 'pop'; p.innerText = `+${pwr}`;
+            p.className = 'pop'; p.innerText = `+${add}`;
+            if (isBonus) p.style.color = 'var(--blue)';
             p.style.left = (x - 20) + 'px'; p.style.top = (y - 50) + 'px';
             document.body.appendChild(p);
             setTimeout(() => p.remove(), 700);
@@ -190,19 +213,32 @@
 
         function upgrade() { if(score >= cost) { score -= cost; pwr++; cost = Math.round(cost * 1.6); save(); } }
 
-        function getBlessing() {
-            if(!blessTaken) {
-                score += 5000; blessTaken = true; save();
-                tg.showAlert("Благословение получено! +5000");
-                closeMenu();
+        function claimGift() {
+            const today = new Date().toDateString();
+            if(lastGift !== today) {
+                let win = 2500;
+                score += win; lastGift = today; save();
+                tg.showAlert(`🎁 Подарок открыт! Вы получили +${win} монет!`);
             }
         }
 
-        function claimGift() {
-            const today = new Date().toDateString();
-            if(lastGift !== today) { score += 2500; lastGift = today; save(); tg.showAlert("Ежедневный подарок получен!"); }
+        function loadTop() {
+            openModal('modal-top');
+            const list = document.getElementById('top-list');
+            list.innerHTML = "<div style='text-align:center;padding:20px;'>Загрузка...</div>";
+            db.ref('leaderboard').orderByChild('score').limitToLast(15).once('value', s => {
+                let items = [];
+                s.forEach(child => { items.push(child.val()); });
+                items.sort((a, b) => b.score - a.score);
+                list.innerHTML = "";
+                items.forEach((p, i) => {
+                    list.innerHTML += `<div class="row"><span>${i+1}. ${p.name}</span><b>${p.score.toLocaleString()}</b></div>`;
+                });
+            });
         }
 
+        // Остальные функции без изменений
+        function getBlessing() { if(!blessTaken) { score += 5000; blessTaken = true; save(); tg.showAlert("Благословение! +5000"); closeMenu(); } }
         let spinning = false;
         function spinWheel() {
             if(spinning || score < 1000) return;
@@ -214,36 +250,23 @@
                 const win = prizes[Math.floor(((360 - (deg % 360) + 22.5) % 360) / 45)];
                 score += win; save();
                 document.getElementById('wheel-res').innerText = `ВЫИГРАНО: ${win}!`;
-                document.getElementById('spin-btn').disabled = false;
             }, 4000);
         }
-
         function startCase() {
             if(score < 900) return;
             score -= 900; save();
-            const btn = document.getElementById('case-go'); btn.disabled = true;
             const track = document.getElementById('roll-track');
             track.style.transition = 'none'; track.style.transform = 'translateX(0)'; track.innerHTML = '';
             const win = [50, 100, 500, 1000, 5000][Math.floor(Math.random()*5)];
             for(let i=0; i<45; i++) {
                 let v = (i === 40) ? win : [10, 50, 100][Math.floor(Math.random()*3)];
-                track.innerHTML += `<div class="item" style="color:${v>=500?'var(--orange)':'white'}">${v}</div>`;
+                track.innerHTML += `<div class="item">${v}</div>`;
             }
             setTimeout(() => {
                 track.style.transition = 'transform 4s cubic-bezier(0.1, 0, 0.1, 1)';
                 track.style.transform = `translateX(-${4000 - 150}px)`;
-                setTimeout(() => { score += win; save(); btn.disabled = false; tg.showAlert(`Выпало: ${win}!`); }, 4100);
+                setTimeout(() => { score += win; save(); tg.showAlert(`Выпало: ${win}!`); }, 4100);
             }, 50);
-        }
-
-        function loadTop() {
-            openModal('modal-top');
-            db.ref('leaderboard').orderByChild('score').limitToLast(10).once('value', s => {
-                let h = ""; let i = 1;
-                let arr = []; s.forEach(c => arr.push(c.val()));
-                arr.reverse().forEach(p => { h += `<div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #222;"><span>${i++}. ${p.name}</span><b>${p.score}</b></div>`; });
-                document.getElementById('top-list').innerHTML = h;
-            });
         }
 
         function invite() { tg.openTelegramLink(`https://t.me/share/url?url=https://t.me/bot?start=${uid}&text=Лети за мной!`); }
@@ -251,7 +274,8 @@
         function closeModal(id) { document.getElementById(id).style.display = 'none'; }
         function openMenu() { document.getElementById('main-menu').style.display = 'flex'; }
         function closeMenu() { document.getElementById('main-menu').style.display = 'none'; }
-
+        
+        setInterval(updateUI, 1000); // Обновление таймера бонуса
         updateUI();
     </script>
 </body>
